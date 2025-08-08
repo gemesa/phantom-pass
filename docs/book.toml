@@ -1,0 +1,5 @@
+[book]
+authors = ["Andras Gemes"]
+language = "en"
+src = "src"
+title = "LLVM obfuscator"
