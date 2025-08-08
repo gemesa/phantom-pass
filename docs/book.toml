@@ -2,4 +2,4 @@
 authors = ["Andras Gemes"]
 language = "en"
 src = "src"
-title = "LLVM obfuscator"
+title = "Phantom pass - LLVM obfuscator"
