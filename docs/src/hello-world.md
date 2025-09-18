@@ -39,7 +39,7 @@ attributes #0 = { noinline nounwind optnone ssp uwtable(sync) "frame-pointer"="n
 !5 = !{!"Apple clang version 17.0.0 (clang-1700.0.13.5)"}
 ```
 
-Build the pass:
+Build the pass plugin:
 
 ```
 $ clang++ -std=c++17 -shared -fPIC $(llvm-config --cxxflags) obf.cpp $(llvm-config --ldflags --libs core support passes analysis transformutils target bitwriter) -o obf.dylib
@@ -86,7 +86,7 @@ attributes #0 = { noinline nounwind optnone ssp uwtable(sync) "frame-pointer"="n
 !5 = !{!"Apple clang version 17.0.0 (clang-1700.0.13.5)"}
 ```
 
-Build and run the modified IR:
+Build the modified IR and run the executable:
 
 ```
 $ clang obf.ll -o obf && ./obf
