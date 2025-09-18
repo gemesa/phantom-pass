@@ -27,18 +27,16 @@ public:
       return PreservedAnalyses::all();
     }
 
-    Changed = injectHelloWorld(M, *MainFunc);
+    injectHelloWorld(M, *MainFunc);
 
-    if (Changed) {
-      outs() << "HelloWorldPass: Successfully injected puts(\"Hello, world!\") "
-                "into main\n";
-    }
+    outs() << "HelloWorldPass: Successfully injected puts(\"Hello, world!\") "
+              "into main\n";
 
-    return Changed ? PreservedAnalyses::none() : PreservedAnalyses::all();
+    return PreservedAnalyses::none();
   }
 
 private:
-  bool injectHelloWorld(Module &M, Function &MainFunc) {
+  void injectHelloWorld(Module &M, Function &MainFunc) {
     LLVMContext &Ctx = M.getContext();
     BasicBlock &EntryBB = MainFunc.getEntryBlock();
 
@@ -54,9 +52,6 @@ private:
     Function *PutsFunc = getOrCreatePutsFunction(M);
 
     Builder.CreateCall(PutsFunc, {HelloStr});
-
-    // We notify the caller that we modified the function.
-    return true;
   }
 
   Function *getOrCreatePutsFunction(Module &M) {
