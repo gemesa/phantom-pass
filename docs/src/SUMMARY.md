@@ -7,3 +7,4 @@
 # Passes
 
 - [Hello, world!](0-hello-world.md)
+- [String XOR encryption](1-string-xor-encryption.md)
