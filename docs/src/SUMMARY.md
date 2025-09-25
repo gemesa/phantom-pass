@@ -6,4 +6,4 @@
 
 ## Passes
 
-- [Hello, world!](hello-world.md)
+- [Hello, world!](0-hello-world.md)
