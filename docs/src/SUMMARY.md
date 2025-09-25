@@ -4,6 +4,6 @@
 [Prerequisites](./prerequisites.md)
 [References](./references.md)
 
-## Passes
+# Passes
 
 - [Hello, world!](0-hello-world.md)
