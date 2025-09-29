@@ -60,8 +60,7 @@ private:
 
     for (GlobalVariable &GV : M.globals()) {
       if (GV.hasInitializer()) {
-        if (ConstantDataArray *CDA =
-                dyn_cast<ConstantDataArray>(GV.getInitializer())) {
+        if (auto *CDA = dyn_cast<ConstantDataArray>(GV.getInitializer())) {
           if (CDA->isCString()) {
             StringGlobals.push_back(&GV);
           }
@@ -84,8 +83,9 @@ private:
       uint8_t Key = RNG();
 
       std::vector<uint8_t> EncryptedData;
-      for (size_t i = 0; i < OrigStr.size(); ++i) {
-        uint8_t EncryptedByte = OrigStr[i] ^ Key;
+      EncryptedData.reserve(OrigStr.size());
+      for (uint8_t byte : OrigStr) {
+        uint8_t EncryptedByte = byte ^ Key;
         EncryptedData.push_back(EncryptedByte);
       }
 
@@ -99,7 +99,7 @@ private:
 
       std::vector<Instruction *> UsesToReplace;
       for (User *U : OrigGV->users()) {
-        if (Instruction *I = dyn_cast<Instruction>(U)) {
+        if (auto *I = dyn_cast<Instruction>(U)) {
           UsesToReplace.push_back(I);
         }
       }
@@ -157,12 +157,13 @@ private:
     Function *F =
         Function::Create(FT, Function::PrivateLinkage, "__obf_decrypt", M);
 
-    auto Args = F->args();
-    auto ArgIter = Args.begin();
+    auto ArgIter = F->arg_begin();
     ArgIter->setName("enc_ptr");
-    Value *EncryptedPtr = &*ArgIter++;
+    Value *EncryptedPtr = &*ArgIter;
+    ++ArgIter;
     ArgIter->setName("key");
-    Value *Key = &*ArgIter++;
+    Value *Key = &*ArgIter;
+    ++ArgIter;
     ArgIter->setName("len");
     Value *Len = &*ArgIter;
 
@@ -185,16 +186,17 @@ private:
     Builder.CreateCondBr(Condition, LoopBody, LoopExit);
 
     Builder.SetInsertPoint(LoopBody);
-    Value *SrcGEP =
-        Builder.CreateGEP(Type::getInt8Ty(Ctx), EncryptedPtr, IndexPhi, "src_gep");
-    Value *DstGEP =
-        Builder.CreateGEP(Type::getInt8Ty(Ctx), DecryptedPtr, IndexPhi, "dst_gep");
-    Value *EncryptedByte = Builder.CreateLoad(Type::getInt8Ty(Ctx), SrcGEP, "enc_byte");
+    Value *SrcGEP = Builder.CreateGEP(Type::getInt8Ty(Ctx), EncryptedPtr,
+                                      IndexPhi, "src_gep");
+    Value *DstGEP = Builder.CreateGEP(Type::getInt8Ty(Ctx), DecryptedPtr,
+                                      IndexPhi, "dst_gep");
+    Value *EncryptedByte =
+        Builder.CreateLoad(Type::getInt8Ty(Ctx), SrcGEP, "enc_byte");
     Value *DecryptedByte = Builder.CreateXor(EncryptedByte, Key, "dec_byte");
     Builder.CreateStore(DecryptedByte, DstGEP);
 
-    Value *NextIndex =
-        Builder.CreateAdd(IndexPhi, ConstantInt::get(Type::getInt64Ty(Ctx), 1), "next_idx");
+    Value *NextIndex = Builder.CreateAdd(
+        IndexPhi, ConstantInt::get(Type::getInt64Ty(Ctx), 1), "next_idx");
     IndexPhi->addIncoming(NextIndex, LoopBody);
     Builder.CreateBr(LoopHeader);
 
