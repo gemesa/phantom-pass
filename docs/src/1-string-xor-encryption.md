@@ -1,6 +1,6 @@
-# String XOR encryption
+# String XOR encryption (with malloc)
 
-An LLVM pass that replaces C strings with XOR-encrypted versions and decrypts them at runtime.
+An LLVM pass that replaces C strings with XOR-encrypted versions and decrypts them at runtime. The decrypted string is stored in a heap-allocated block.
 
 The source code is available [here](https://github.com/gemesa/phantom-pass/tree/main/src/1-string-xor-encryption).
 

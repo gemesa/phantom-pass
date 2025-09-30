@@ -1,6 +1,6 @@
 // LLVM pass that replaces C strings with XOR-encrypted versions and
-// decrypts them at runtime. The decrypted string is stored in a heap-allocated
-// block.
+// decrypts them at runtime. The decrypted string is stored in the original
+// encrypted global variable.
 
 #include "llvm/IR/BasicBlock.h"
 #include "llvm/IR/Constants.h"
@@ -96,7 +96,7 @@ private:
 
       std::string EncName = "__obf_str_" + std::to_string(RNG());
       GlobalVariable *EncGV = new GlobalVariable(
-          M, AT, true, GlobalValue::PrivateLinkage, EncryptedArray, EncName);
+          M, AT, false, GlobalValue::PrivateLinkage, EncryptedArray, EncName);
 
       std::vector<Instruction *> UsesToReplace;
       for (User *U : OrigGV->users()) {
@@ -129,22 +129,6 @@ private:
     return true;
   }
 
-  Function *getOrCreateMallocFunction(Module &M) {
-    Function *MallocFunction = M.getFunction("malloc");
-    if (MallocFunction) {
-      return MallocFunction;
-    }
-
-    LLVMContext &Ctx = M.getContext();
-
-    // Function signature: void* malloc(size_t size)
-    FunctionType *FT = FunctionType::get(PointerType::getUnqual(Ctx),
-                                         {Type::getInt64Ty(Ctx)}, false);
-
-    Function *F = Function::Create(FT, Function::ExternalLinkage, "malloc", M);
-    return F;
-  }
-
   Function *createDecryptionFunction(Module &M) {
     LLVMContext &Ctx = M.getContext();
 
@@ -168,12 +152,10 @@ private:
     ArgIter->setName("len");
     Value *Len = &*ArgIter;
 
-    Function *MallocFunction = getOrCreateMallocFunction(M);
-
     BasicBlock *Entry = BasicBlock::Create(Ctx, "entry", F);
     IRBuilder<> Builder(Entry);
 
-    Value *DecryptedPtr = Builder.CreateCall(MallocFunction, {Len}, "dec_ptr");
+    Value *DecryptedPtr = EncryptedPtr;
 
     BasicBlock *LoopHeader = BasicBlock::Create(Ctx, "loop_header", F);
     Builder.CreateBr(LoopHeader);
