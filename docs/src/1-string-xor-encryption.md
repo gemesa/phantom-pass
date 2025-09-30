@@ -7,7 +7,7 @@ The source code is available [here](https://github.com/gemesa/phantom-pass/tree/
 Generate the IR for our `main()` test code:
 
 ```
-$ clang test.c -S -emit-llvm -o test.ll
+$ clang test.c -S -emit-llvm -o test.ll -O3
 ```
 
 Check the output:
