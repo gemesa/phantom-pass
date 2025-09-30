@@ -2,7 +2,7 @@
 
 An LLVM pass that replaces C strings with XOR-encrypted versions and decrypts them at runtime. The decrypted string is stored in the original encrypted global variable.
 
-The source code is available [here](https://github.com/gemesa/phantom-pass/tree/main/src/1-string-xor-encryption).
+The source code is available [here](https://github.com/gemesa/phantom-pass/tree/main/src/3-string-xor-encryption).
 
 Generate the IR for our `main()` test code:
 
