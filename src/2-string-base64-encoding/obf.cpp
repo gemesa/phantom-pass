@@ -12,6 +12,7 @@
 #include "llvm/Passes/PassBuilder.h"
 #include "llvm/Passes/PassPlugin.h"
 #include "llvm/Support/CommandLine.h"
+#include "llvm/Support/FormatVariadic.h"
 #include "llvm/Support/raw_ostream.h"
 
 #include <boost/beast/core/detail/base64.hpp>
@@ -94,7 +95,7 @@ private:
 
       Constant *EncodedArray = ConstantDataArray::getString(Ctx, encoded, true);
 
-      std::string EncName = "__obf_str_" + std::to_string(RNG());
+      SmallString<64> EncName = formatv("__obf_str_{0}", RNG());
       GlobalVariable *EncGV = new GlobalVariable(
           M, EncodedArray->getType(), false, GlobalValue::PrivateLinkage,
           EncodedArray, EncName);
@@ -223,8 +224,8 @@ private:
     std::vector<Constant *> TableValues(
         256, ConstantInt::get(Type::getInt32Ty(Ctx), -1));
 
-    std::string chars =
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    SmallString<64> chars(
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/");
     for (int i = 0; i < 64; i++) {
       TableValues[(unsigned char)chars[i]] =
           ConstantInt::get(Type::getInt32Ty(Ctx), i);

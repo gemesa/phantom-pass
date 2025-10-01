@@ -13,6 +13,7 @@
 #include "llvm/Passes/PassBuilder.h"
 #include "llvm/Passes/PassPlugin.h"
 #include "llvm/Support/CommandLine.h"
+#include "llvm/Support/FormatVariadic.h"
 #include "llvm/Support/raw_ostream.h"
 
 #include <random>
@@ -83,7 +84,7 @@ private:
 
       uint8_t Key = RNG();
 
-      std::vector<uint8_t> EncryptedData;
+      SmallVector<uint8_t, 128> EncryptedData;
       EncryptedData.reserve(OrigStr.size());
       for (uint8_t byte : OrigStr) {
         uint8_t EncryptedByte = byte ^ Key;
@@ -94,7 +95,7 @@ private:
           ArrayType::get(Type::getInt8Ty(Ctx), EncryptedData.size());
       Constant *EncryptedArray = ConstantDataArray::get(Ctx, EncryptedData);
 
-      std::string EncName = "__obf_str_" + std::to_string(RNG());
+      SmallString<64> EncName = formatv("__obf_str_{0}", RNG());
       GlobalVariable *EncGV = new GlobalVariable(
           M, AT, true, GlobalValue::PrivateLinkage, EncryptedArray, EncName);
 
