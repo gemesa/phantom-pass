@@ -13,6 +13,12 @@ $ sudo ln -s /opt/homebrew/opt/llvm/bin/llc /usr/local/bin/llc
 $ sudo ln -s /opt/homebrew/opt/llvm/bin/llvm-config /usr/local/bin/llvm-config
 ```
 
+### Boost
+
+```
+$ brew install boost
+```
+
 ### Ghidra
 
 ```
@@ -39,7 +45,8 @@ Press `Cmd` + `Shift` + `P` and run the `C/C++: Edit Configurations (JSON)` comm
                 "/opt/homebrew/opt/llvm/include/llvm",
                 "/opt/homebrew/opt/llvm/include/llvm/IR",
                 "/opt/homebrew/opt/llvm/include/llvm/Passes",
-                "/opt/homebrew/opt/llvm/include/llvm/Support"
+                "/opt/homebrew/opt/llvm/include/llvm/Support",
+                "/opt/homebrew/include"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/clang",
