@@ -19,6 +19,18 @@ $ sudo ln -s /opt/homebrew/opt/llvm/bin/llvm-config /usr/local/bin/llvm-config
 $ brew install boost
 ```
 
+### LibreSSL or OpenSSL
+
+```
+$ brew install libressl
+```
+
+or:
+
+```
+$ brew install openssl
+```
+
 ### Ghidra
 
 ```
