@@ -227,7 +227,7 @@ private:
       TableValues[(unsigned char)chars[i]] = Builder.getInt32(i);
     }
 
-    ArrayType *TableType = ArrayType::get(Type::getInt32Ty(Ctx), 256);
+    ArrayType *TableType = ArrayType::get(Builder.getInt32Ty(), 256);
 
     Constant *TableInit = ConstantArray::get(TableType, TableValues);
 
@@ -239,10 +239,10 @@ private:
     /*
     int val = 0, bits = -8;
     */
-    Value *Val = Builder.CreateAlloca(Type::getInt32Ty(Ctx), nullptr, "val");
+    Value *Val = Builder.CreateAlloca(Builder.getInt32Ty(), nullptr, "val");
     Builder.CreateStore(Builder.getInt32(0), Val);
 
-    Value *Bits = Builder.CreateAlloca(Type::getInt32Ty(Ctx), nullptr, "bits");
+    Value *Bits = Builder.CreateAlloca(Builder.getInt32Ty(), nullptr, "bits");
     Builder.CreateStore(Builder.getInt32(-8), Bits);
 
     /*
@@ -250,7 +250,7 @@ private:
     */
 
     Value *OutPos =
-        Builder.CreateAlloca(Type::getInt64Ty(Ctx), nullptr, "out_pos");
+        Builder.CreateAlloca(Builder.getInt64Ty(), nullptr, "out_pos");
     Builder.CreateStore(Builder.getInt64(0), OutPos);
 
     /*
@@ -263,7 +263,7 @@ private:
     Builder.CreateBr(LoopHeader);
     Builder.SetInsertPoint(LoopHeader);
 
-    PHINode *IndexPhi = Builder.CreatePHI(Type::getInt64Ty(Ctx), 2, "phi_idx");
+    PHINode *IndexPhi = Builder.CreatePHI(Builder.getInt64Ty(), 2, "phi_idx");
     IndexPhi->addIncoming(Builder.getInt64(0), Entry);
 
     BasicBlock *LoopBody = BasicBlock::Create(Ctx, "loop_body", F);
@@ -279,8 +279,8 @@ private:
     Builder.SetInsertPoint(LoopBody);
 
     Value *InputGEP = Builder.CreateInBoundsGEP(
-        Type::getInt8Ty(Ctx), EncodedPtr, IndexPhi, "input_gep");
-    Value *Char = Builder.CreateLoad(Type::getInt8Ty(Ctx), InputGEP, "char");
+        Builder.getInt8Ty(), EncodedPtr, IndexPhi, "input_gep");
+    Value *Char = Builder.CreateLoad(Builder.getInt8Ty(), InputGEP, "char");
 
     /*
     T[c]
@@ -292,7 +292,7 @@ private:
 
     Value *TableGEP = Builder.CreateInBoundsGEP(TableType, LookupTableGV,
                                                 {Zero, Char}, "table_gep");
-    Value *TC = Builder.CreateLoad(Type::getInt32Ty(Ctx), TableGEP, "tc");
+    Value *TC = Builder.CreateLoad(Builder.getInt32Ty(), TableGEP, "tc");
 
     /*
     val = (val << 6) +
@@ -301,7 +301,7 @@ private:
     */
 
     Value *ValLoaded =
-        Builder.CreateLoad(Type::getInt32Ty(Ctx), Val, "val_loaded");
+        Builder.CreateLoad(Builder.getInt32Ty(), Val, "val_loaded");
     Value *ValShifted =
         Builder.CreateShl(ValLoaded, Builder.getInt32(6), "val_shifted");
     Value *ValNew = Builder.CreateAdd(ValShifted, TC, "val_new");
@@ -312,7 +312,7 @@ private:
     */
 
     Value *BitsLoaded =
-        Builder.CreateLoad(Type::getInt32Ty(Ctx), Bits, "bits_loaded");
+        Builder.CreateLoad(Builder.getInt32Ty(), Bits, "bits_loaded");
     Value *BitsNew =
         Builder.CreateAdd(BitsLoaded, Builder.getInt32(6), "bits_new");
     Builder.CreateStore(BitsNew, Bits);
@@ -329,7 +329,7 @@ private:
     Builder.SetInsertPoint(StoreByteBB);
 
     Value *OutPosLoaded =
-        Builder.CreateLoad(Type::getInt64Ty(Ctx), OutPos, "out_pos_loaded");
+        Builder.CreateLoad(Builder.getInt64Ty(), OutPos, "out_pos_loaded");
 
     /*
     (char)((val >> bits) & 0xFF)
@@ -340,7 +340,7 @@ private:
     Value *Masked =
         Builder.CreateAnd(Shifted, Builder.getInt32(0xFF), "masked");
     Value *ByteValue =
-        Builder.CreateTrunc(Masked, Type::getInt8Ty(Ctx), "byte");
+        Builder.CreateTrunc(Masked, Builder.getInt8Ty(), "byte");
 
     /*
     input[out_pos] =
@@ -348,7 +348,7 @@ private:
     input[out_pos++] = (char)((val >> bits) & 0xFF);
     */
     Value *OutputGEP = Builder.CreateInBoundsGEP(
-        Type::getInt8Ty(Ctx), EncodedPtr, OutPosLoaded, "output_gep");
+        Builder.getInt8Ty(), EncodedPtr, OutPosLoaded, "output_gep");
     Builder.CreateStore(ByteValue, OutputGEP);
 
     /*

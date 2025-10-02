@@ -161,7 +161,7 @@ private:
     BasicBlock *LoopHeader = BasicBlock::Create(Ctx, "loop_header", F);
     Builder.CreateBr(LoopHeader);
     Builder.SetInsertPoint(LoopHeader);
-    PHINode *IndexPhi = Builder.CreatePHI(Type::getInt64Ty(Ctx), 2, "phi_idx");
+    PHINode *IndexPhi = Builder.CreatePHI(Builder.getInt64Ty(), 2, "phi_idx");
     IndexPhi->addIncoming(Builder.getInt64(0), Entry);
 
     BasicBlock *LoopBody = BasicBlock::Create(Ctx, "loop_body", F);
@@ -170,12 +170,12 @@ private:
     Builder.CreateCondBr(Condition, LoopBody, LoopExit);
 
     Builder.SetInsertPoint(LoopBody);
-    Value *SrcGEP = Builder.CreateGEP(Type::getInt8Ty(Ctx), EncryptedPtr,
+    Value *SrcGEP = Builder.CreateGEP(Builder.getInt8Ty(), EncryptedPtr,
                                       IndexPhi, "src_gep");
-    Value *DstGEP = Builder.CreateGEP(Type::getInt8Ty(Ctx), DecryptedPtr,
+    Value *DstGEP = Builder.CreateGEP(Builder.getInt8Ty(), DecryptedPtr,
                                       IndexPhi, "dst_gep");
     Value *EncryptedByte =
-        Builder.CreateLoad(Type::getInt8Ty(Ctx), SrcGEP, "enc_byte");
+        Builder.CreateLoad(Builder.getInt8Ty(), SrcGEP, "enc_byte");
     Value *DecryptedByte = Builder.CreateXor(EncryptedByte, Key, "dec_byte");
     Builder.CreateStore(DecryptedByte, DstGEP);
 
