@@ -18,9 +18,7 @@ namespace {
 
 class HelloWorldPass : public PassInfoMixin<HelloWorldPass> {
 public:
-  PreservedAnalyses run(Module &M, ModuleAnalysisManager &AM) {
-    bool Changed = false;
-
+  PreservedAnalyses run(Module &M, ModuleAnalysisManager &) {
     Function *MainFunc = M.getFunction("main");
     if (!MainFunc) {
       errs() << "HelloWorldPass: No main function found\n";
@@ -37,7 +35,6 @@ public:
 
 private:
   void injectHelloWorld(Module &M, Function &MainFunc) {
-    LLVMContext &Ctx = M.getContext();
     BasicBlock &EntryBB = MainFunc.getEntryBlock();
 
     // We insert before the terminator.

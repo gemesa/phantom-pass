@@ -31,7 +31,7 @@ public:
   PreservedAnalyses run(Module &M, ModuleAnalysisManager &) {
     bool Changed = false;
 
-    std::vector<GlobalVariable *> StringGlobals = std::move(locateStrings(M));
+    std::vector<GlobalVariable *> StringGlobals = locateStrings(M);
 
     if (StringGlobals.empty()) {
       outs() << "StringBase64EncodePass: Could not locate any strings\n";

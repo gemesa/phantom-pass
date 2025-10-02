@@ -6,7 +6,7 @@ test.ll: test.c
 	clang test.c -S -emit-llvm -o test.ll
 
 obf.dylib: obf.cpp
-	clang++ -std=c++17 -I/opt/homebrew/include -shared -fPIC $(shell llvm-config --cxxflags) obf.cpp $(shell llvm-config --ldflags --libs core support passes analysis transformutils target bitwriter) -o obf.dylib
+	clang++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -isystem $(shell llvm-config --includedir) -I/opt/homebrew/include -shared -fPIC $(shell llvm-config --cxxflags) obf.cpp $(shell llvm-config --ldflags --libs core support passes analysis transformutils target bitwriter) -o obf.dylib
 
 obf.ll: obf.dylib test.ll
 	opt -load-pass-plugin=./obf.dylib -passes="string-base64-encode" -S test.ll -o obf.ll
