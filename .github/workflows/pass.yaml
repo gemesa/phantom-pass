@@ -15,7 +15,7 @@ jobs:
       - name: Format check the passes
         run: make format-check
 
-      - name: Build and run passes
+      - name: Build and run the passes
         run: make
 
       - name: Run the executables
