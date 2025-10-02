@@ -111,8 +111,8 @@ private:
 
         Value *EncPtr =
             Builder.CreateBitCast(EncGV, PointerType::getUnqual(Ctx));
-        Value *KeyVal = ConstantInt::get(Type::getInt8Ty(Ctx), Key);
-        Value *LenVal = ConstantInt::get(Type::getInt64Ty(Ctx), OrigStr.size());
+        Value *KeyVal = Builder.getInt8(Key);
+        Value *LenVal = Builder.getInt64(OrigStr.size());
 
         Value *DecryptedStr =
             Builder.CreateCall(DecryptFunc, {EncPtr, KeyVal, LenVal});
@@ -180,7 +180,7 @@ private:
     Builder.CreateBr(LoopHeader);
     Builder.SetInsertPoint(LoopHeader);
     PHINode *IndexPhi = Builder.CreatePHI(Type::getInt64Ty(Ctx), 2, "phi_idx");
-    IndexPhi->addIncoming(ConstantInt::get(Type::getInt64Ty(Ctx), 0), Entry);
+    IndexPhi->addIncoming(Builder.getInt64(0), Entry);
 
     BasicBlock *LoopBody = BasicBlock::Create(Ctx, "loop_body", F);
     BasicBlock *LoopExit = BasicBlock::Create(Ctx, "loop_exit", F);
@@ -197,8 +197,8 @@ private:
     Value *DecryptedByte = Builder.CreateXor(EncryptedByte, Key, "dec_byte");
     Builder.CreateStore(DecryptedByte, DstGEP);
 
-    Value *NextIndex = Builder.CreateAdd(
-        IndexPhi, ConstantInt::get(Type::getInt64Ty(Ctx), 1), "next_idx");
+    Value *NextIndex =
+        Builder.CreateAdd(IndexPhi, Builder.getInt64(1), "next_idx");
     IndexPhi->addIncoming(NextIndex, LoopBody);
     Builder.CreateBr(LoopHeader);
 

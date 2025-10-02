@@ -113,7 +113,7 @@ private:
         Value *EncPtr =
             Builder.CreateBitCast(EncGV, PointerType::getUnqual(Ctx));
         Value *EncodedLen =
-            ConstantInt::get(Type::getInt64Ty(Ctx), encoded.size());
+            Builder.getInt64(encoded.size());
 
         Builder.CreateCall(DecodeFunction, {EncPtr, EncodedLen});
 
@@ -222,13 +222,13 @@ private:
     */
 
     std::vector<Constant *> TableValues(
-        256, ConstantInt::get(Type::getInt32Ty(Ctx), -1));
+        256, Builder.getInt32(-1));
 
     SmallString<64> chars(
         "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/");
     for (int i = 0; i < 64; i++) {
       TableValues[(unsigned char)chars[i]] =
-          ConstantInt::get(Type::getInt32Ty(Ctx), i);
+          Builder.getInt32(i);
     }
 
     ArrayType *TableType = ArrayType::get(Type::getInt32Ty(Ctx), 256);
@@ -244,10 +244,10 @@ private:
     int val = 0, bits = -8;
     */
     Value *Val = Builder.CreateAlloca(Type::getInt32Ty(Ctx), nullptr, "val");
-    Builder.CreateStore(ConstantInt::get(Type::getInt32Ty(Ctx), 0), Val);
+    Builder.CreateStore(Builder.getInt32(0), Val);
 
     Value *Bits = Builder.CreateAlloca(Type::getInt32Ty(Ctx), nullptr, "bits");
-    Builder.CreateStore(ConstantInt::get(Type::getInt32Ty(Ctx), -8), Bits);
+    Builder.CreateStore(Builder.getInt32(-8), Bits);
 
     /*
     size_t out_pos = 0;
@@ -255,7 +255,7 @@ private:
 
     Value *OutPos =
         Builder.CreateAlloca(Type::getInt64Ty(Ctx), nullptr, "out_pos");
-    Builder.CreateStore(ConstantInt::get(Type::getInt64Ty(Ctx), 0), OutPos);
+    Builder.CreateStore(Builder.getInt64(0), OutPos);
 
     /*
     for (size_t i = 0; i < length;
@@ -268,7 +268,7 @@ private:
     Builder.SetInsertPoint(LoopHeader);
 
     PHINode *IndexPhi = Builder.CreatePHI(Type::getInt64Ty(Ctx), 2, "phi_idx");
-    IndexPhi->addIncoming(ConstantInt::get(Type::getInt64Ty(Ctx), 0), Entry);
+    IndexPhi->addIncoming(Builder.getInt64(0), Entry);
 
     BasicBlock *LoopBody = BasicBlock::Create(Ctx, "loop_body", F);
     BasicBlock *LoopExit = BasicBlock::Create(Ctx, "loop_exit", F);
@@ -292,7 +292,7 @@ private:
     val = (val << 6) + T[c];
     */
 
-    Value *Zero = ConstantInt::get(Type::getInt32Ty(Ctx), 0);
+    Value *Zero = Builder.getInt32(0);
 
     Value *TableGEP = Builder.CreateInBoundsGEP(TableType, LookupTableGV,
                                                 {Zero, Char}, "table_gep");
@@ -307,7 +307,7 @@ private:
     Value *ValLoaded =
         Builder.CreateLoad(Type::getInt32Ty(Ctx), Val, "val_loaded");
     Value *ValShifted = Builder.CreateShl(
-        ValLoaded, ConstantInt::get(Type::getInt32Ty(Ctx), 6), "val_shifted");
+        ValLoaded, Builder.getInt32(6), "val_shifted");
     Value *ValNew = Builder.CreateAdd(ValShifted, TC, "val_new");
     Builder.CreateStore(ValNew, Val);
 
@@ -318,14 +318,14 @@ private:
     Value *BitsLoaded =
         Builder.CreateLoad(Type::getInt32Ty(Ctx), Bits, "bits_loaded");
     Value *BitsNew = Builder.CreateAdd(
-        BitsLoaded, ConstantInt::get(Type::getInt32Ty(Ctx), 6), "bits_new");
+        BitsLoaded, Builder.getInt32(6), "bits_new");
     Builder.CreateStore(BitsNew, Bits);
 
     /*
     if (bits >= 0) {
     */
     Value *BitsCheck = Builder.CreateICmpSGE(
-        BitsNew, ConstantInt::get(Type::getInt32Ty(Ctx), 0), "bits_check");
+        BitsNew, Builder.getInt32(0), "bits_check");
     BasicBlock *StoreByteBB = BasicBlock::Create(Ctx, "store_byte", F);
     BasicBlock *LoopIncBB = BasicBlock::Create(Ctx, "loop_inc", F);
     Builder.CreateCondBr(BitsCheck, StoreByteBB, LoopIncBB);
@@ -342,7 +342,7 @@ private:
     */
     Value *Shifted = Builder.CreateLShr(ValNew, BitsNew, "shifted");
     Value *Masked = Builder.CreateAnd(
-        Shifted, ConstantInt::get(Type::getInt32Ty(Ctx), 0xFF), "masked");
+        Shifted, Builder.getInt32(0xFF), "masked");
     Value *ByteValue =
         Builder.CreateTrunc(Masked, Type::getInt8Ty(Ctx), "byte");
 
@@ -361,7 +361,7 @@ private:
     input[out_pos++] = (char)((val >> bits) & 0xFF);
     */
     Value *OutPosInc = Builder.CreateAdd(
-        OutPosLoaded, ConstantInt::get(Type::getInt64Ty(Ctx), 1),
+        OutPosLoaded, Builder.getInt64(1),
         "out_pos_inc");
     Builder.CreateStore(OutPosInc, OutPos);
 
@@ -369,7 +369,7 @@ private:
     bits -= 8;
     */
     Value *BitsDecremented = Builder.CreateSub(
-        BitsNew, ConstantInt::get(Type::getInt32Ty(Ctx), 8), "bits_dec");
+        BitsNew, Builder.getInt32(8), "bits_dec");
     Builder.CreateStore(BitsDecremented, Bits);
 
     Builder.CreateBr(LoopIncBB);
@@ -381,7 +381,7 @@ private:
     for (size_t i = 0; i < length; i++) {
     */
     Value *NextIndex = Builder.CreateAdd(
-        IndexPhi, ConstantInt::get(Type::getInt64Ty(Ctx), 1), "next_idx");
+        IndexPhi, Builder.getInt64(1), "next_idx");
     IndexPhi->addIncoming(NextIndex, LoopIncBB);
 
     /*
