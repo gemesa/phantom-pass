@@ -1,4 +1,4 @@
-.PHONY: all clean format format-check
+.PHONY: all clean run format format-check
 
 all: test.ll obf.dylib obf.ll obf
 
