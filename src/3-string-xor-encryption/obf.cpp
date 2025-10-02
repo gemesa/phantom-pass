@@ -13,8 +13,8 @@
 #include "llvm/Passes/PassBuilder.h"
 #include "llvm/Passes/PassPlugin.h"
 #include "llvm/Support/CommandLine.h"
-#include "llvm/Support/raw_ostream.h"
 #include "llvm/Support/FormatVariadic.h"
+#include "llvm/Support/raw_ostream.h"
 
 #include <random>
 #include <vector>
@@ -109,8 +109,7 @@ private:
       for (Instruction *I : UsesToReplace) {
         IRBuilder<> Builder(I);
 
-        Value *EncPtr =
-            Builder.CreateBitCast(EncGV, Builder.getPtrTy());
+        Value *EncPtr = Builder.CreateBitCast(EncGV, Builder.getPtrTy());
         Value *KeyVal = Builder.getInt8(Key);
         Value *LenVal = Builder.getInt64(OrigStr.size());
 
@@ -179,8 +178,8 @@ private:
     Value *DecryptedByte = Builder.CreateXor(EncryptedByte, Key, "dec_byte");
     Builder.CreateStore(DecryptedByte, DstGEP);
 
-    Value *NextIndex = Builder.CreateAdd(
-        IndexPhi, Builder.getInt64(1), "next_idx");
+    Value *NextIndex =
+        Builder.CreateAdd(IndexPhi, Builder.getInt64(1), "next_idx");
     IndexPhi->addIncoming(NextIndex, LoopBody);
     Builder.CreateBr(LoopHeader);
 

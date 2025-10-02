@@ -278,8 +278,8 @@ private:
 
     Builder.SetInsertPoint(LoopBody);
 
-    Value *InputGEP = Builder.CreateInBoundsGEP(
-        Builder.getInt8Ty(), EncodedPtr, IndexPhi, "input_gep");
+    Value *InputGEP = Builder.CreateInBoundsGEP(Builder.getInt8Ty(), EncodedPtr,
+                                                IndexPhi, "input_gep");
     Value *Char = Builder.CreateLoad(Builder.getInt8Ty(), InputGEP, "char");
 
     /*
@@ -339,8 +339,7 @@ private:
     Value *Shifted = Builder.CreateLShr(ValNew, BitsNew, "shifted");
     Value *Masked =
         Builder.CreateAnd(Shifted, Builder.getInt32(0xFF), "masked");
-    Value *ByteValue =
-        Builder.CreateTrunc(Masked, Builder.getInt8Ty(), "byte");
+    Value *ByteValue = Builder.CreateTrunc(Masked, Builder.getInt8Ty(), "byte");
 
     /*
     input[out_pos] =
