@@ -109,8 +109,7 @@ private:
       for (Instruction *I : UsesToReplace) {
         IRBuilder<> Builder(I);
 
-        Value *EncPtr =
-            Builder.CreateBitCast(EncGV, PointerType::getUnqual(Ctx));
+        Value *EncPtr = Builder.CreateBitCast(EncGV, Builder.getPtrTy());
         Value *KeyVal = Builder.getInt8(Key);
         Value *LenVal = Builder.getInt64(OrigStr.size());
 

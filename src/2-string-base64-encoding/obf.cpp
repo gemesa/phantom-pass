@@ -110,10 +110,8 @@ private:
       for (Instruction *I : UsesToReplace) {
         IRBuilder<> Builder(I);
 
-        Value *EncPtr =
-            Builder.CreateBitCast(EncGV, PointerType::getUnqual(Ctx));
-        Value *EncodedLen =
-            Builder.getInt64(encoded.size());
+        Value *EncPtr = Builder.CreateBitCast(EncGV, Builder.getPtrTy());
+        Value *EncodedLen = Builder.getInt64(encoded.size());
 
         Builder.CreateCall(DecodeFunction, {EncPtr, EncodedLen});
 
@@ -221,14 +219,12 @@ private:
     //        'a'-'z' (97-122) = 26-51
     */
 
-    std::vector<Constant *> TableValues(
-        256, Builder.getInt32(-1));
+    std::vector<Constant *> TableValues(256, Builder.getInt32(-1));
 
     SmallString<64> chars(
         "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/");
     for (int i = 0; i < 64; i++) {
-      TableValues[(unsigned char)chars[i]] =
-          Builder.getInt32(i);
+      TableValues[(unsigned char)chars[i]] = Builder.getInt32(i);
     }
 
     ArrayType *TableType = ArrayType::get(Type::getInt32Ty(Ctx), 256);
@@ -306,8 +302,8 @@ private:
 
     Value *ValLoaded =
         Builder.CreateLoad(Type::getInt32Ty(Ctx), Val, "val_loaded");
-    Value *ValShifted = Builder.CreateShl(
-        ValLoaded, Builder.getInt32(6), "val_shifted");
+    Value *ValShifted =
+        Builder.CreateShl(ValLoaded, Builder.getInt32(6), "val_shifted");
     Value *ValNew = Builder.CreateAdd(ValShifted, TC, "val_new");
     Builder.CreateStore(ValNew, Val);
 
@@ -317,15 +313,15 @@ private:
 
     Value *BitsLoaded =
         Builder.CreateLoad(Type::getInt32Ty(Ctx), Bits, "bits_loaded");
-    Value *BitsNew = Builder.CreateAdd(
-        BitsLoaded, Builder.getInt32(6), "bits_new");
+    Value *BitsNew =
+        Builder.CreateAdd(BitsLoaded, Builder.getInt32(6), "bits_new");
     Builder.CreateStore(BitsNew, Bits);
 
     /*
     if (bits >= 0) {
     */
-    Value *BitsCheck = Builder.CreateICmpSGE(
-        BitsNew, Builder.getInt32(0), "bits_check");
+    Value *BitsCheck =
+        Builder.CreateICmpSGE(BitsNew, Builder.getInt32(0), "bits_check");
     BasicBlock *StoreByteBB = BasicBlock::Create(Ctx, "store_byte", F);
     BasicBlock *LoopIncBB = BasicBlock::Create(Ctx, "loop_inc", F);
     Builder.CreateCondBr(BitsCheck, StoreByteBB, LoopIncBB);
@@ -341,8 +337,8 @@ private:
     input[out_pos++] = (char)((val >> bits) & 0xFF);
     */
     Value *Shifted = Builder.CreateLShr(ValNew, BitsNew, "shifted");
-    Value *Masked = Builder.CreateAnd(
-        Shifted, Builder.getInt32(0xFF), "masked");
+    Value *Masked =
+        Builder.CreateAnd(Shifted, Builder.getInt32(0xFF), "masked");
     Value *ByteValue =
         Builder.CreateTrunc(Masked, Type::getInt8Ty(Ctx), "byte");
 
@@ -360,16 +356,15 @@ private:
     in this statament:
     input[out_pos++] = (char)((val >> bits) & 0xFF);
     */
-    Value *OutPosInc = Builder.CreateAdd(
-        OutPosLoaded, Builder.getInt64(1),
-        "out_pos_inc");
+    Value *OutPosInc =
+        Builder.CreateAdd(OutPosLoaded, Builder.getInt64(1), "out_pos_inc");
     Builder.CreateStore(OutPosInc, OutPos);
 
     /*
     bits -= 8;
     */
-    Value *BitsDecremented = Builder.CreateSub(
-        BitsNew, Builder.getInt32(8), "bits_dec");
+    Value *BitsDecremented =
+        Builder.CreateSub(BitsNew, Builder.getInt32(8), "bits_dec");
     Builder.CreateStore(BitsDecremented, Bits);
 
     Builder.CreateBr(LoopIncBB);
@@ -380,8 +375,8 @@ private:
     in this loop header:
     for (size_t i = 0; i < length; i++) {
     */
-    Value *NextIndex = Builder.CreateAdd(
-        IndexPhi, Builder.getInt64(1), "next_idx");
+    Value *NextIndex =
+        Builder.CreateAdd(IndexPhi, Builder.getInt64(1), "next_idx");
     IndexPhi->addIncoming(NextIndex, LoopIncBB);
 
     /*
