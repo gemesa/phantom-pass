@@ -18,7 +18,6 @@ clean:
 	rm test.ll obf.dylib obf.ll obf
 
 run:
-	@echo "Running from: $(CURDIR)"
 	./obf
 
 format:
