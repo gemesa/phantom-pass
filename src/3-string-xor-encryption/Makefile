@@ -1,4 +1,4 @@
-.PHONY: all clean
+.PHONY: all clean format format-check
 
 all: test.ll obf.dylib obf.ll obf
 
@@ -20,3 +20,9 @@ clean:
 run:
 	@echo "Running from: $(CURDIR)"
 	./obf
+
+format:
+	clang-format -i obf.cpp
+
+format-check:
+	clang-format --dry-run -Werror obf.cpp
