@@ -12,8 +12,8 @@ jobs:
       - name: Install deps
         run: sudo apt update && sudo apt install llvm libboost-all-dev libssl-dev -y
 
-      - name: Build passes
+      - name: Build and run passes
         run: make
 
-      - name: Run passes
+      - name: Run the executables
         run: make run
