@@ -11,22 +11,22 @@ all: $(SUBDIRS)
 $(SUBDIRS):
 	$(MAKE) -C $@
 
-clean:
-	@for dir in $(SUBDIRS); do \
-		$(MAKE) -C $$dir clean; \
-	done
+clean: $(SUBDIRS:%=clean-%)
 
-run:
-	@for dir in $(SUBDIRS); do \
-		$(MAKE) -C $$dir run; \
-	done
+$(SUBDIRS:%=clean-%):
+	$(MAKE) -C $(@:clean-%=%) clean
 
-format:
-	@for dir in $(SUBDIRS); do \
-		$(MAKE) -C $$dir format; \
-	done
+run: $(SUBDIRS:%=run-%)
 
-format-check:
-	@for dir in $(SUBDIRS); do \
-		$(MAKE) -C $$dir format-check; \
-	done
+$(SUBDIRS:%=run-%):
+	$(MAKE) -C $(@:run-%=%) run
+
+format: $(SUBDIRS:%=format-%)
+
+$(SUBDIRS:%=format-%):
+	$(MAKE) -C $(@:format-%=%) format
+
+format-check: $(SUBDIRS:%=format-check-%)
+
+$(SUBDIRS:%=format-check-%):
+	$(MAKE) -C $(@:format-check-%=%) format-check
