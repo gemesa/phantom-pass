@@ -4,13 +4,13 @@ Phantom Pass is a collection of LLVM IR level obfuscation passes. The techniques
 
 The documentation can be found [here](https://shadowshell.io/phantom-pass/).
 
-## How to build all passes
+## How to build and run the passes
 
 ```
 $ make
 ```
 
-## How to run all passes
+## How to run the executables
 
 ```
 $ make run
