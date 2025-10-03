@@ -15,7 +15,7 @@ $(SUBDIRS):
 clean: $(SUBDIRS:%=clean-%)
 
 $(SUBDIRS:%=clean-%):
-	$(MAKE) -C $(@:clean-%=%) clean
+	-$(MAKE) -C $(@:clean-%=%) clean
 
 run: $(SUBDIRS:%=run-%)
 
