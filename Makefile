@@ -2,7 +2,8 @@ SUBDIRS := \
 src/0-hello-world \
 src/1-string-xor-encryption \
 src/2-string-base64-encoding \
-src/3-string-xor-encryption
+src/3-string-xor-encryption \
+src/4-string-rc4-encryption
 
 .PHONY: all clean run format format-check $(SUBDIRS)
 
