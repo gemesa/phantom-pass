@@ -302,7 +302,7 @@ private:
     Value *SBoxGEPI2 = Builder.CreateInBoundsGEP(
         SBoxType, SBox, {Builder.getInt32(0), IndexPHI2}, "sbox_gep_i2");
     Value *SBoxI2Loaded =
-        Builder.CreateLoad(Builder.getInt32Ty(), SBoxGEPI2, "s_i2_loaded");
+        Builder.CreateLoad(Builder.getInt8Ty(), SBoxGEPI2, "s_i2_loaded");
     Value *SBoxI2LoadedExt =
         Builder.CreateZExt(SBoxI2Loaded, Builder.getInt32Ty(), "s_i2_ext");
 
@@ -313,7 +313,7 @@ private:
     */
     Value *Mod0 = Builder.CreateSRem(IndexPHI2, KeyLen, "mod0");
     Value *KeyGEP =
-        Builder.CreateGEP(Builder.getPtrTy(), KeyPtr, Mod0, "key_gep");
+        Builder.CreateGEP(Builder.getInt8Ty(), KeyPtr, Mod0, "key_gep");
     Value *KeyLoaded =
         Builder.CreateLoad(Builder.getInt8Ty(), KeyGEP, "key_loaded");
 
@@ -351,7 +351,7 @@ private:
     Value *SBoxGEPJ = Builder.CreateInBoundsGEP(
         SBoxType, SBox, {Builder.getInt32(0), JLoaded}, "sbox_gep_j");
     Value *SBoxJLoaded =
-        Builder.CreateLoad(Builder.getInt32Ty(), SBoxGEPJ, "sbox_j_loaded");
+        Builder.CreateLoad(Builder.getInt8Ty(), SBoxGEPJ, "sbox_j_loaded");
     Builder.CreateStore(SBoxJLoaded, SBoxGEPI2);
 
     /*
@@ -360,7 +360,9 @@ private:
     t = S[i]; S[i] = S[j]; S[j] = t;
     */
     Value *TLoaded = Builder.CreateLoad(Builder.getInt32Ty(), T, "t_loaded");
-    Builder.CreateStore(TLoaded, SBoxGEPJ);
+    Value *TLoadedTrunc =
+        Builder.CreateTrunc(TLoaded, Builder.getInt8Ty(), "t_trunc");
+    Builder.CreateStore(TLoadedTrunc, SBoxGEPJ);
 
     /*
     i++
@@ -422,11 +424,14 @@ private:
     j = (j + S[i]) % 256;
     */
     Value *J3Loaded = Builder.CreateLoad(Builder.getInt32Ty(), J3, "j3_loaded");
-    Value *SBoxGEPI3 =
-        Builder.CreateInBoundsGEP(SBoxType, SBox, I3Loaded, "sbox_gep_i3");
+    I3Loaded = Builder.CreateLoad(Builder.getInt32Ty(), I3, "i3_loaded");
+    Value *SBoxGEPI3 = Builder.CreateInBoundsGEP(
+        SBoxType, SBox, {Builder.getInt32(0), I3Loaded}, "sbox_gep_i3");
     Value *SBoxI3Loaded =
-        Builder.CreateLoad(Builder.getInt32Ty(), SBoxGEPI3, "sbox_i3_loaded");
-    Value *Sum2 = Builder.CreateAdd(J3Loaded, SBoxI3Loaded, "sum2");
+        Builder.CreateLoad(Builder.getInt8Ty(), SBoxGEPI3, "sbox_i3_loaded");
+    Value *SBoxI3LoadedExt =
+        Builder.CreateZExt(SBoxI3Loaded, Builder.getInt32Ty(), "sbox_i3_ext");
+    Value *Sum2 = Builder.CreateAdd(J3Loaded, SBoxI3LoadedExt, "sum2");
     Value *Mod3 = Builder.CreateSRem(Sum2, Builder.getInt32(256), "mod3");
     Builder.CreateStore(Mod3, J3);
 
@@ -435,7 +440,7 @@ private:
     in this statement:
     t = S[i]; S[i] = S[j]; S[j] = t;
     */
-    Builder.CreateStore(SBoxI3Loaded, T);
+    Builder.CreateStore(SBoxI3LoadedExt, T);
 
     /*
     S[i] = S[j];
@@ -446,7 +451,7 @@ private:
     Value *SBoxGEPJ3 = Builder.CreateInBoundsGEP(
         SBoxType, SBox, {Builder.getInt32(0), J3Loaded}, "sbox_gep_j3");
     Value *SBoxJ3Loaded =
-        Builder.CreateLoad(Builder.getInt32Ty(), SBoxGEPJ3, "sbox_j3_loaded");
+        Builder.CreateLoad(Builder.getInt8Ty(), SBoxGEPJ3, "sbox_j3_loaded");
     Builder.CreateStore(SBoxJ3Loaded, SBoxGEPI3);
 
     /*
@@ -455,23 +460,29 @@ private:
     t = S[i]; S[i] = S[j]; S[j] = t;
     */
     TLoaded = Builder.CreateLoad(Builder.getInt32Ty(), T, "t_loaded");
-    Builder.CreateStore(TLoaded, SBoxGEPJ3);
+    Value *TLoadedTrunc2 =
+        Builder.CreateTrunc(TLoaded, Builder.getInt8Ty(), "t_trunc2");
+    Builder.CreateStore(TLoadedTrunc2, SBoxGEPJ3);
 
     /*
     data[k] ^= S[(S[i] + S[j]) % 256];
     */
     SBoxI3Loaded =
-        Builder.CreateLoad(Builder.getInt32Ty(), SBoxGEPI3, "sbox_i3_loaded");
+        Builder.CreateLoad(Builder.getInt8Ty(), SBoxGEPI3, "sbox_i3_loaded");
+    Value *SBoxI3LoadedExt2 =
+        Builder.CreateZExt(SBoxI3Loaded, Builder.getInt32Ty(), "sbox_i3_ext2");
     SBoxJ3Loaded =
-        Builder.CreateLoad(Builder.getInt32Ty(), SBoxGEPJ3, "sbox_j3_loaded");
-    Value *Sum3 = Builder.CreateAdd(SBoxI3Loaded, SBoxJ3Loaded, "sum3");
+        Builder.CreateLoad(Builder.getInt8Ty(), SBoxGEPJ3, "sbox_j3_loaded");
+    Value *SBoxJ3LoadedExt =
+        Builder.CreateZExt(SBoxJ3Loaded, Builder.getInt32Ty(), "sbox_j3_ext");
+    Value *Sum3 = Builder.CreateAdd(SBoxI3LoadedExt2, SBoxJ3LoadedExt, "sum3");
     Value *Mod4 = Builder.CreateSRem(Sum3, Builder.getInt32(256), "mod4");
-    Value *SBoxGEPMod4 =
-        Builder.CreateInBoundsGEP(SBoxType, SBox, Mod4, "sbox_gep_mod4");
+    Value *SBoxGEPMod4 = Builder.CreateInBoundsGEP(
+        SBoxType, SBox, {Builder.getInt32(0), Mod4}, "sbox_gep_mod4");
     Value *SBoxGEPMod4Loaded = Builder.CreateLoad(
         Builder.getInt8Ty(), SBoxGEPMod4, "sbox_gep_mod4_loaded");
-    Value *DataGEP = Builder.CreateInBoundsGEP(Builder.getPtrTy(), DataPtr,
-                                               KPHI3, "data_gep");
+    Value *DataGEP =
+        Builder.CreateGEP(Builder.getInt8Ty(), DataPtr, KPHI3, "data_gep");
     Value *DataLoaded =
         Builder.CreateLoad(Builder.getInt8Ty(), DataGEP, "data_loaded");
     Value *Xor = Builder.CreateXor(DataLoaded, SBoxGEPMod4Loaded, "xor");
