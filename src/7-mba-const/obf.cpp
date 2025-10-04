@@ -20,6 +20,7 @@ Where `42` is the constant we want to obfuscate, 8 is the bitwidth and the
 coefficient bound is unspecified (default: 20000).
 
 Known limitations:
+- increased code size
 - increased runtime penalty
 */
 

@@ -14,6 +14,7 @@ MBA: 200*x + 198*y - 200*(x&y) - 198*(x|y) - 1*(x^y)
 Where `x-y` is the expression we want to obfuscate, 32 is the bitwidth and 200 is the coefficient bound.
 
 Known limitations:
+- increased code size
 - increased runtime penalty
 
 The source code is available [here](https://github.com/gemesa/phantom-pass/tree/main/src/6-mba-sub).

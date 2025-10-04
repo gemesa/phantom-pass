@@ -20,6 +20,7 @@ Where `x+y` is the expression we want to obfuscate, 32 is the bitwidth and 200
 is the coefficient bound.
 
 Known limitations:
+- increased code size
 - increased runtime penalty
 */
 

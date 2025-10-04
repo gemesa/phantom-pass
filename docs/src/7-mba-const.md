@@ -14,6 +14,7 @@ MBA: 20000*x + 20000*y - 20000*(x&y) - 20000*(x|y) - 214
 Where `42` is the constant we want to obfuscate, 8 is the bitwidth and the coefficient bound is unspecified (default: 20000).
 
 Known limitations:
+- increased code size
 - increased runtime penalty
 
 The source code is available [here](https://github.com/gemesa/phantom-pass/tree/main/src/6-mba-sub).
