@@ -139,5 +139,5 @@ Build the modified IR and run the executable:
 
 ```
 $ clang obf.ll -o obf && ./obf
-Sum: 15
+Result: -5
 ```
