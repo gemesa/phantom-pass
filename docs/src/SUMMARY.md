@@ -13,3 +13,4 @@
 - [String RC4 encryption](4-string-rc4-encryption.md)
 - [MBA add](5-mba-add.md)
 - [MBA sub](6-mba-sub.md)
+- [MBA const](7-mba-const.md)
