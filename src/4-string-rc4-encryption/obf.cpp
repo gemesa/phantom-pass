@@ -11,6 +11,8 @@ are supported at this time
 - the decrypted strings are not re-encrypted after use, meaning they stay
 unencrypted in the memory
 - the RC4 key (`"MySecretKey"`) is hardcoded into the binary
+- increased code size
+- increased runtime penalty
 */
 
 #include "llvm/IR/BasicBlock.h"

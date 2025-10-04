@@ -10,6 +10,10 @@ strings](https://llvm.org/doxygen/classllvm_1_1ConstantDataSequential.html#aecff
 are supported at this time
 - the decrypted strings are not re-encrypted after use, meaning they stay
 unencrypted in the memory
+- increased code size (although small compared to more complex encryption
+methods such as RC4)
+- increased runtime penalty (although small compared to more complex encryption
+methods such as RC4)
 */
 
 #include "llvm/IR/BasicBlock.h"

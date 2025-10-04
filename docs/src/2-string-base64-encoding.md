@@ -5,6 +5,8 @@ LLVM pass that replaces C strings with base64-encoded versions and decodes them 
 Known limitations:
 - only [C strings](https://llvm.org/doxygen/classllvm_1_1ConstantDataSequential.html#aecff3ad6cfa0e4abfd4fc9484d973e7d) are supported at this time
 - the decoded strings are not re-encoded after use, meaning they stay decoded in the memory
+- increased code size
+- increased runtime penalty
 
 The source code is available [here](https://github.com/gemesa/phantom-pass/tree/main/src/2-string-base64-encoding).
 

@@ -5,6 +5,8 @@ An LLVM pass that replaces C strings with XOR-encrypted versions and decrypts th
 Known limitations:
 - only [C strings](https://llvm.org/doxygen/classllvm_1_1ConstantDataSequential.html#aecff3ad6cfa0e4abfd4fc9484d973e7d) are supported at this time
 - the decrypted strings are not re-encrypted after use, meaning they stay unencrypted in the memory
+- increased code size (although small compared to more complex encryption methods such as RC4)
+- increased runtime penalty (although small compared to more complex encryption methods such as RC4)
 
 The source code is available [here](https://github.com/gemesa/phantom-pass/tree/main/src/3-string-xor-encryption).
 

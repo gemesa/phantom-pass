@@ -10,6 +10,8 @@ strings](https://llvm.org/doxygen/classllvm_1_1ConstantDataSequential.html#aecff
 are supported at this time
 - the decoded strings are not re-encoded after use, meaning they stay decoded in
 the memory
+- increased code size
+- increased runtime penalty
 */
 
 #include "llvm/IR/BasicBlock.h"

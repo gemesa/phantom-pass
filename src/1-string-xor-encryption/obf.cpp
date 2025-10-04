@@ -12,6 +12,10 @@ are supported at this time
 unencrypted in the memory
 - the allocated memory blocks are not freed (only when the process exits and the
 OS reclaims them)
+- increased code size (although small compared to more complex encryption
+methods such as RC4)
+- increased runtime penalty (although small compared to more complex encryption
+methods such as RC4)
 */
 
 #include "llvm/IR/BasicBlock.h"
