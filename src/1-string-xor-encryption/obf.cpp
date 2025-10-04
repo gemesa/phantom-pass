@@ -1,6 +1,18 @@
-// LLVM pass that replaces C strings with XOR-encrypted versions and
-// decrypts them at runtime. The decrypted string is stored in a heap-allocated
-// block.
+/*
+An LLVM pass that replaces C strings with XOR-encrypted versions and decrypts
+them at runtime. The decrypted strings are stored in heap-allocated blocks. The
+pass automatically replaces the original string references with the encrypted
+ones, implements the decrypt function and calls it before the string is used.
+
+Known limitations:
+- only [C
+strings](https://llvm.org/doxygen/classllvm_1_1ConstantDataSequential.html#aecff3ad6cfa0e4abfd4fc9484d973e7d)
+are supported at this time
+- the decrypted strings are not re-encrypted after use, meaning they stay
+unencrypted in the memory
+- the allocated memory blocks are not freed (only when the process exits and the
+OS reclaims them)
+*/
 
 #include "llvm/IR/BasicBlock.h"
 #include "llvm/IR/Constants.h"

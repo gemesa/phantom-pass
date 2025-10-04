@@ -1,4 +1,9 @@
-// Simple LLVM pass that inserts a puts("Hello, world!") call into main().
+/*
+A simple LLVM pass that inserts a `puts("Hello, world!")` call into `main()`.
+
+Known limitations:
+- `puts` is only declared by the pass (not defined)
+*/
 
 #include "llvm/IR/BasicBlock.h"
 #include "llvm/IR/Constants.h"
