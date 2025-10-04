@@ -3,10 +3,10 @@
 all: test.ll obf.dylib obf.ll obf
 
 test.ll: test.c
-	clang test.c -S -emit-llvm -o test.ll
+	clang test.c -O3 -S -emit-llvm -o test.ll
 
 obf.dylib: obf.cpp
-	clang++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -Wno-deprecated-declarations -lcrypto -L/opt/homebrew/opt/libressl/lib -I/opt/homebrew/include -isystem $(shell llvm-config --includedir) -shared -fPIC $(shell llvm-config --cxxflags) obf.cpp $(shell llvm-config --ldflags --libs core support passes analysis transformutils target bitwriter) -o obf.dylib
+	clang++ -std=c++17 -O3 -Wall -Wextra -Wpedantic -Werror -Wno-deprecated-declarations -lcrypto -L/opt/homebrew/opt/libressl/lib -I/opt/homebrew/include -isystem $(shell llvm-config --includedir) -shared -fPIC $(shell llvm-config --cxxflags) obf.cpp $(shell llvm-config --ldflags --libs core support passes analysis transformutils target bitwriter) -o obf.dylib
 
 obf.ll: obf.dylib test.ll
 	opt -load-pass-plugin=./obf.dylib -passes="string-rc4-encryption" -S test.ll -o obf.ll
