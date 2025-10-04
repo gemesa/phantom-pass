@@ -1,5 +1,5 @@
 /*
-An LLVM pass that replaces `add` instructions with equivalent obfuscated
+An LLVM pass that replaces `sub` instructions with equivalent obfuscated
 [MBA](https://www.usenix.org/conference/usenixsecurity21/presentation/liu-binbin)
 instruction sequences. These are more difficult to analyze at the expense of an
 increased runtime penalty.
@@ -10,13 +10,13 @@ has been implemented to support solving MBA problems. The MBA implemented in
 this pass has been constructed with the following parameters:
 
 ```
-$ python3 mba_solver.py 'x+y' 32 200
-TGT: x+y
-MBA: 200*x + 200*y - 200*(x&y) - 198*(x|y) - 1*(x^y)
-(2.04s)
+$ python3 mba_solver.py 'x-y' 32 200
+TGT: x-y
+MBA: 200*x + 198*y - 200*(x&y) - 198*(x|y) - 1*(x^y)
+(3.12s)
 ```
 
-Where `x+y` is the expression we want to obfuscate, 32 is the bitwidth and 200
+Where `x-y` is the expression we want to obfuscate, 32 is the bitwidth and 200
 is the coefficient bound.
 
 Known limitations:
