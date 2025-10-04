@@ -12,3 +12,4 @@
 - [String XOR encryption (with global)](3-string-xor-encryption.md)
 - [String RC4 encryption](4-string-rc4-encryption.md)
 - [MBA add](5-mba-add.md)
+- [MBA sub](6-mba-sub.md)
