@@ -1,6 +1,10 @@
 # String XOR encryption (with global)
 
-An LLVM pass that replaces C strings with XOR-encrypted versions and decrypts them at runtime. The decrypted string is stored in the original encrypted global variable.
+An LLVM pass that replaces C strings with XOR-encrypted versions and decrypts them at runtime. The decrypted string is stored in the original encrypted global variable. The pass automatically calls the decrypt function before the string is used.
+
+Known limitations:
+- only [C strings](https://llvm.org/doxygen/classllvm_1_1ConstantDataSequential.html#aecff3ad6cfa0e4abfd4fc9484d973e7d) are supported at this time
+- the decrypted strings are not re-encrypted after use, meaning they stay unencrypted in the memory
 
 The source code is available [here](https://github.com/gemesa/phantom-pass/tree/main/src/3-string-xor-encryption).
 
