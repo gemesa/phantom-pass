@@ -6,6 +6,8 @@ The source code is available [here](https://github.com/gemesa/phantom-pass/tree/
 
 Generate the IR for our empty `main()` test code:
 
+> Note: we optimize the generated IR before applying our obfuscation pass.
+
 ```
 $ clang test.c -O3 -S -emit-llvm -o test.ll
 ```
@@ -83,6 +85,8 @@ attributes #0 = { mustprogress nofree norecurse nosync nounwind ssp willreturn m
 ```
 
 Build the modified IR and run the executable:
+
+> Note: do not pass `-O3` or other optimization-related options at this point as they might interfere with the applied obfuscation methods.
 
 ```
 $ clang obf.ll -o obf && ./obf
