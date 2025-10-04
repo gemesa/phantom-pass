@@ -77,8 +77,8 @@ $ clang++ -std=c++17 -O3 -Wall -Wextra -Wpedantic -Werror -Wno-deprecated-declar
 Run the pass:
 
 ```
-$ opt -load-pass-plugin=./obf.dylib -passes="mba-add" -S test.ll -o obf.ll
-MbaAddPass: Replaced 1 add operators
+$ opt -load-pass-plugin=./obf.dylib -passes="mba-sub" -S test.ll -o obf.ll
+MbaSubPass: Replaced 1 sub operators
 ```
 
 Check the output, note that the `sub` instruction is replaced:
