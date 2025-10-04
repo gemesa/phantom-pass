@@ -13,6 +13,8 @@ $ sudo ln -s /opt/homebrew/opt/llvm/bin/llc /usr/local/bin/llc
 $ sudo ln -s /opt/homebrew/opt/llvm/bin/llvm-config /usr/local/bin/llvm-config
 ```
 
+Alternatively, add `/opt/homebrew/opt/llvm/bin` to the path. This will shadow the preinstalled LLVM tools.
+
 ### Boost
 
 ```
