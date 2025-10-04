@@ -2,6 +2,9 @@
 
 A simple LLVM pass that inserts a `puts("Hello, world!")` call into `main()`.
 
+Known limitations:
+- `puts` is only declared by the pass (not defined)
+
 The source code is available [here](https://github.com/gemesa/phantom-pass/tree/main/src/0-hello-world).
 
 Generate the IR for our empty `main()` test code:

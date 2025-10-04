@@ -1,6 +1,6 @@
 # String XOR encryption (with malloc)
 
-An LLVM pass that replaces C strings with XOR-encrypted versions and decrypts them at runtime. The decrypted strings are stored in heap-allocated blocks. The pass automatically replaces the original string references with the encrypted ones and calls the decrypt function before the string is used.
+An LLVM pass that replaces C strings with XOR-encrypted versions and decrypts them at runtime. The decrypted strings are stored in heap-allocated blocks. The pass automatically replaces the original string references with the encrypted ones, implements the decrypt function and calls it before the string is used.
 
 Known limitations:
 - only [C strings](https://llvm.org/doxygen/classllvm_1_1ConstantDataSequential.html#aecff3ad6cfa0e4abfd4fc9484d973e7d) are supported at this time
