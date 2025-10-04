@@ -1,8 +1,6 @@
 /*
-A simple LLVM pass that inserts a `puts("Hello, world!")` call into `main()`.
-
-Known limitations:
-- `puts` is only declared by the pass (not defined)
+The documentation is available here:
+https://shadowshell.io/phantom-pass/0-hello-world.html
 */
 
 #include "llvm/IR/BasicBlock.h"

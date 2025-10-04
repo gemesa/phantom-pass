@@ -1,27 +1,6 @@
 /*
-An LLVM pass that replaces `42` constants with equivalent obfuscated
-[MBA](https://www.usenix.org/conference/usenixsecurity21/presentation/liu-binbin)
-instruction sequences. These are more difficult to analyze at the expense of an
-increased runtime penalty.
-
-A [helper
-script](https://github.com/gemesa/phantom-pass/tree/main/src/util/mba_solver.py)
-has been implemented to support solving MBA problems. The MBA implemented in
-this pass has been constructed with the following parameters:
-
-```
-$ python3 mba_solver.py 42 8
-TGT: 42
-MBA: 20000*x + 20000*y - 20000*(x&y) - 20000*(x|y) - 214
-(0.11s)
-```
-
-Where `42` is the constant we want to obfuscate, 8 is the bitwidth and the
-coefficient bound is unspecified (default: 20000).
-
-Known limitations:
-- increased code size
-- increased runtime penalty
+The documentation is available here:
+https://shadowshell.io/phantom-pass/7-mba-const.html
 */
 
 #include "llvm/IR/BasicBlock.h"

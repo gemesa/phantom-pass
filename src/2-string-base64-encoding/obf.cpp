@@ -1,17 +1,6 @@
 /*
-LLVM pass that replaces C strings with base64-encoded versions and decodes them
-at runtime. The decoded string is stored in the original encoded global
-variable. The pass automatically implements the decode function and calls it
-before the string is used.
-
-Known limitations:
-- only [C
-strings](https://llvm.org/doxygen/classllvm_1_1ConstantDataSequential.html#aecff3ad6cfa0e4abfd4fc9484d973e7d)
-are supported at this time
-- the decoded strings are not re-encoded after use, meaning they stay decoded in
-the memory
-- increased code size
-- increased runtime penalty
+The documentation is available here:
+https://shadowshell.io/phantom-pass/2-string-base64-encoding.html
 */
 
 #include "llvm/IR/BasicBlock.h"

@@ -1,18 +1,6 @@
 /*
-An LLVM pass that replaces C strings with RC4-encrypted versions and decrypts
-them at runtime. The decrypted string is stored in the original encrypted global
-variable. The pass automatically implements the decrypt function and calls it
-before the string is used.
-
-Known limitations:
-- only [C
-strings](https://llvm.org/doxygen/classllvm_1_1ConstantDataSequential.html#aecff3ad6cfa0e4abfd4fc9484d973e7d)
-are supported at this time
-- the decrypted strings are not re-encrypted after use, meaning they stay
-unencrypted in the memory
-- the RC4 key (`"MySecretKey"`) is hardcoded into the binary
-- increased code size
-- increased runtime penalty
+The documentation is available here:
+https://shadowshell.io/phantom-pass/4-string-rc4-encryption.html
 */
 
 #include "llvm/IR/BasicBlock.h"
