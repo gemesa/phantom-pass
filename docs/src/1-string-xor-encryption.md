@@ -7,7 +7,7 @@ The source code is available [here](https://github.com/gemesa/phantom-pass/tree/
 Generate the IR for our `main()` test code:
 
 ```
-$ clang test.c -S -emit-llvm -o test.ll -O3
+$ clang test.c -O3 -S -emit-llvm -o test.ll
 ```
 
 Check the output:
@@ -41,13 +41,13 @@ attributes #1 = { nofree nounwind "frame-pointer"="non-leaf" "no-trapping-math"=
 !2 = !{i32 8, !"PIC Level", i32 2}
 !3 = !{i32 7, !"uwtable", i32 1}
 !4 = !{i32 7, !"frame-pointer", i32 1}
-!5 = !{!"Homebrew clang version 21.1.1"}
+!5 = !{!"Homebrew clang version 21.1.2"}
 ```
 
 Build the pass plugin:
 
 ```
-$ clang++ -std=c++17 -shared -fPIC $(llvm-config --cxxflags) obf.cpp $(llvm-config --ldflags --libs core support passes analysis transformutils target bitwriter) -o obf.dylib
+$ clang++ -std=c++17 -O3 -shared -fPIC $(llvm-config --cxxflags) obf.cpp $(llvm-config --ldflags --libs core support passes analysis transformutils target bitwriter) -o obf.dylib
 ```
 
 Run the pass:
@@ -66,11 +66,11 @@ source_filename = "test.c"
 target datalayout = "e-m:o-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-n32:64-S128-Fn32"
 target triple = "arm64-apple-macosx15.0.0"
 
-@__obf_str_2599983770 = private constant [14 x i8] c"\9D\B0\B9\B9\BA\F9\F5\A2\BA\A7\B9\B1\F4\D5"
+@__obf_str_1427455572 = private constant [14 x i8] c"Q|uuv59nvku}8\19"
 
 ; Function Attrs: nofree nounwind ssp uwtable(sync)
 define noundef i32 @main() local_unnamed_addr #0 {
-  %1 = call ptr @__obf_decrypt(ptr @__obf_str_2599983770, i8 -43, i64 14)
+  %1 = call ptr @__obf_decrypt(ptr @__obf_str_1427455572, i8 25, i64 14)
   %2 = tail call i32 @puts(ptr noundef nonnull dereferenceable(1) %1)
   ret i32 0
 }
@@ -114,7 +114,7 @@ attributes #1 = { nofree nounwind "frame-pointer"="non-leaf" "no-trapping-math"=
 !2 = !{i32 8, !"PIC Level", i32 2}
 !3 = !{i32 7, !"uwtable", i32 1}
 !4 = !{i32 7, !"frame-pointer", i32 1}
-!5 = !{!"Homebrew clang version 21.1.1"}
+!5 = !{!"Homebrew clang version 21.1.2"}
 ```
 
 Build the modified IR and run the executable:
