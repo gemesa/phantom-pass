@@ -17,7 +17,7 @@ Known limitations:
 - increased code size
 - increased runtime penalty
 
-The source code is available [here](https://github.com/gemesa/phantom-pass/tree/main/src/6-mba-sub).
+The source code is available [here](https://github.com/gemesa/phantom-pass/tree/main/src/7-mba-const).
 
 Generate the IR for our `main()` test code:
 
