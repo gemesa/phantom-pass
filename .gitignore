@@ -1,5 +1,7 @@
 tmp/
 .vscode/
 *.dylib
+*.s
 *.ll
+test
 obf
