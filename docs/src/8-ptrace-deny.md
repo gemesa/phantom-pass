@@ -147,7 +147,19 @@ $ clang obf.ll -o obf && ./obf
 2025-10-12 14:52:59.754 obf[11116:354178] Hello, World!
 ```
 
-Run the executable with a debugger:
+Run the executables with a debugger:
+
+```
+$ clang test.m -O3 -framework Foundation -o test
+$ lldb ./test -o "run" -o "exit"            
+(lldb) target create "./test"
+Current executable set to '/Users/gemesa/git-repos/phantom-pass/src/8-ptrace-deny/test' (arm64).
+(lldb) run
+2025-10-12 17:45:21.800577+0200 test[13460:500271] Hello, World!
+Process 13460 launched: '/Users/gemesa/git-repos/phantom-pass/src/8-ptrace-deny/test' (arm64)
+Process 13460 exited with status = 0 (0x00000000)
+(lldb) exit
+```
 
 ```
 $ lldb ./obf -o "run" -o "exit"
