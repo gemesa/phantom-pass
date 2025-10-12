@@ -6,3 +6,4 @@
 - [LLVM Programmer’s Manual](https://llvm.org/docs/ProgrammersManual.html)
 - [LLVM Diagnostics Reference](https://clang.llvm.org/docs/DiagnosticsReference.html)
 - [GDB to LLDB command map](https://lldb.llvm.org/use/map.html)
+- [XNU system call master file](https://github.com/apple-oss-distributions/xnu/blob/main/bsd/kern/syscalls.master)
