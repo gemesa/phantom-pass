@@ -6,7 +6,8 @@ src/3-string-xor-encryption \
 src/4-string-rc4-encryption \
 src/5-mba-add \
 src/6-mba-sub \
-src/7-mba-const
+src/7-mba-const \
+src/8-ptrace-deny
 
 .PHONY: all clean run format format-check $(SUBDIRS)
 
