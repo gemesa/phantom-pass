@@ -12,6 +12,9 @@ jobs:
       - name: Install deps
         run: brew install llvm boost openssl
 
+      - name: Add LLVM to PATH
+        run: echo "$(brew --prefix llvm)/bin" >> $GITHUB_PATH
+
       - name: Format check the passes
         run: make format-check
 
