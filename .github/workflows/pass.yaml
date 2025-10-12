@@ -10,7 +10,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install deps
-        run: brew install llvm boost openssl
+        run: brew install llvm boost libressl
 
       - name: Add LLVM to PATH
         run: echo "$(brew --prefix llvm)/bin" >> $GITHUB_PATH
