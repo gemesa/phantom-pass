@@ -146,3 +146,15 @@ Build the modified IR and run the executable:
 $ clang obf.ll -o obf && ./obf
 2025-10-12 14:52:59.754 obf[11116:354178] Hello, World!
 ```
+
+Run the executable with a debugger:
+
+```
+$ lldb ./obf -o "run" -o "exit"
+(lldb) target create "./obf"
+Current executable set to '/Users/gemesa/git-repos/phantom-pass/src/8-ptrace-deny/obf' (arm64).
+(lldb) run
+Process 11726 launched: '/Users/gemesa/git-repos/phantom-pass/src/8-ptrace-deny/obf' (arm64)
+Process 11726 exited with status = 45 (0x0000002d)
+(lldb) exit
+```
