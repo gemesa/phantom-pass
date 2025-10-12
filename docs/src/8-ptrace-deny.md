@@ -143,7 +143,7 @@ Build the modified IR and run the executable:
 > Note: do not pass `-O3` or other optimization-related options at this point as they might interfere with the applied obfuscation methods.
 
 ```
-$ clang obf.ll -o obf && ./obf
+$ clang -framework Foundation obf.ll -o obf && ./obf
 2025-10-12 14:52:59.754 obf[11116:354178] Hello, World!
 ```
 
