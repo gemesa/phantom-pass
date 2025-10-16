@@ -1,6 +1,6 @@
 # `ptrace` deny (inline asm)
 
-An LLVM pass that inserts an inline asm instruction sequence equivalen to a `ptrace(PT_DENY_ATTACH, 0, 0, 0);` call (which tells the kernel to not allow any debugger to attach to this process) into either all functions (`-passes="ptrace-deny"`) or only the specified ones (`-passes="ptrace-deny<main>"`). Refer to the [`ptrace` documentation](https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man2/ptrace.2.html) for more information.
+An LLVM pass that inserts an inline asm instruction sequence equivalent to a `ptrace(PT_DENY_ATTACH, 0, 0, 0);` call (which tells the kernel to not allow any debugger to attach to this process) into either all functions (`-passes="ptrace-deny"`) or only the specified ones (`-passes="ptrace-deny<main>"`). Refer to the [`ptrace` documentation](https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man2/ptrace.2.html) for more information.
 
 Known limitations:
 - increased code size (negligible)
