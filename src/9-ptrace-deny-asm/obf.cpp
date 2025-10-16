@@ -3,6 +3,7 @@ The documentation is available here:
 https://shadowshell.io/phantom-pass/9-ptrace-deny-asm.html
 */
 
+#include "llvm/ADT/SmallSet.h"
 #include "llvm/IR/BasicBlock.h"
 #include "llvm/IR/Function.h"
 #include "llvm/IR/IRBuilder.h"
@@ -20,12 +21,12 @@ namespace {
 
 class PtraceDenyPass : public PassInfoMixin<PtraceDenyPass> {
 private:
-  std::set<std::string> FunctionNames;
+  SmallSet<StringRef, 8> FunctionNames;
 
 public:
   PtraceDenyPass() = default;
 
-  PtraceDenyPass(std::set<std::string> Names)
+  PtraceDenyPass(SmallSet<StringRef, 8> Names)
       : FunctionNames(std::move(Names)) {}
 
   PreservedAnalyses run(Module &M, ModuleAnalysisManager &) {
@@ -101,7 +102,7 @@ static void registerPass(PassBuilder &PB) {
             SmallVector<StringRef, 4> Parts;
             Name.split(Parts, ';', -1, false);
 
-            std::set<std::string> Functions(Parts.begin(), Parts.end());
+            SmallSet<StringRef, 8> Functions(Parts.begin(), Parts.end());
 
             MPM.addPass(PtraceDenyPass(std::move(Functions)));
             return true;

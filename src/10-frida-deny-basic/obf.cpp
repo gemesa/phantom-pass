@@ -2,6 +2,7 @@
 The documentation is available here:
 https://shadowshell.io/phantom-pass/10-frida-deny-basic.html
 */
+#include "llvm/ADT/SmallSet.h"
 #include "llvm/IR/Constants.h"
 #include "llvm/IR/Function.h"
 #include "llvm/IR/Module.h"
@@ -17,11 +18,11 @@ namespace {
 
 class FridaDenyPass : public PassInfoMixin<FridaDenyPass> {
 private:
-  std::set<std::string> FunctionNames;
+  SmallSet<StringRef, 8> FunctionNames;
 
 public:
   FridaDenyPass() = default;
-  FridaDenyPass(std::set<std::string> Names)
+  FridaDenyPass(SmallSet<StringRef, 8> Names)
       : FunctionNames(std::move(Names)) {}
 
   PreservedAnalyses run(Module &M, ModuleAnalysisManager &) {
@@ -92,7 +93,7 @@ static void registerPass(PassBuilder &PB) {
           if (Name.consume_back(">")) {
             SmallVector<StringRef, 4> Parts;
             Name.split(Parts, ';', -1, false);
-            std::set<std::string> Functions(Parts.begin(), Parts.end());
+            SmallSet<StringRef, 8> Functions(Parts.begin(), Parts.end());
             MPM.addPass(FridaDenyPass(std::move(Functions)));
             return true;
           }
