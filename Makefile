@@ -9,7 +9,8 @@ src/6-mba-sub \
 src/7-mba-const \
 src/8-ptrace-deny \
 src/9-ptrace-deny-asm \
-src/10-frida-deny-basic
+src/10-frida-deny-basic \
+src/11-frida-deny-complex
 
 .PHONY: all clean run format format-check $(SUBDIRS)
 

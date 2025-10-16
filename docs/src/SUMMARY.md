@@ -17,3 +17,4 @@
 - [`ptrace` deny](8-ptrace-deny.md)
 - [`ptrace` deny (inline asm)](9-ptrace-deny-asm.md)
 - [Frida deny (basic)](10-frida-deny-basic.md)
+- [Frida deny (complex)](11-frida-deny-complex.md)
