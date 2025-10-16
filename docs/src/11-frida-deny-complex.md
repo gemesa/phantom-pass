@@ -4,8 +4,6 @@
 
 An LLVM pass that inserts an inline assembly instruction sequence (`mov x16, x16\nmov x17, x17`) into the prologue of either all functions (`-passes="frida-deny"`) or only the specified ones (`-passes="frida-deny<main>"`). On AArch64, Frida uses `x16` and `x17` internally (for an example, see `last_stack_push` in [the docs](https://frida.re/docs/stalker/)). For this reason, it checks if these registers are being used in the function prologue and fails to hook in this case.
 
-An LLVM pass that inserts an inline asm instruction sequence into (`mov	x16, x16\nmov	x17, x17`) the prologue of either all functions (`-passes="frida-deny"`) or only the specified ones (`-passes="frida-deny<main>"`). On AArch64, Frida uses `x16` and `x17` internally (for an example, see `last_stack_push` in [the docs](https://frida.re/docs/stalker/)). For this reason, it checks if these registers are being used in the function prologue and fails to hook in this case.
-
 Known limitations:
 - increased code size (negligible)
 - increased runtime penalty (negligible)
