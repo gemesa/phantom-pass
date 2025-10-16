@@ -74,7 +74,9 @@ attributes #3 = { "frame-pointer"="non-leaf" "no-trapping-math"="true" "stack-pr
 Build the pass plugin:
 
 ```
-$ clang++ -std=c++17 -O3 -Wall -Wextra -Wpedantic -Werror -Wno-deprecated-declarations -isystem $(llvm-config --includedir) -shared -fPIC $(llvm-config --cxxflags) obf.cpp $(llvm-config --ldflags --libs core support passes analysis transformutils target bitwriter) -o obf.dylib
+$ clang++ -std=c++17 -O3 -Wall -Wextra -Wpedantic -Werror -Wno-deprecated-declarations -isystem $(llvm-config --includedir) -I ../util -shared -fPIC $(llvm-config --cxxflags) ../util/assembler.cpp  $(llvm-config --ldflags --libs core support passes analysis transformutils target bitwriter) -o asm.o
+$ clang++ -std=c++17 -O3 -Wall -Wextra -Wpedantic -Werror -Wno-deprecated-declarations -isystem $(llvm-config --includedir) -I ../util -shared -fPIC $(llvm-config --cxxflags) ../util/disassembler.cpp  $(llvm-config --ldflags --libs core support passes analysis transformutils target bitwriter) -o disasm.o
+$ clang++ -std=c++17 -O3 -Wall -Wextra -Wpedantic -Werror -Wno-deprecated-declarations -isystem $(llvm-config --includedir) -shared -fPIC $(llvm-config --cxxflags) obf.cpp $(llvm-config --ldflags --libs core support passes analysis transformutils target bitwriter) asm.o disasm.o -o obf.dylib
 ```
 
 Run the pass:
@@ -150,7 +152,7 @@ Build the modified IR and run the executable:
 
 ```
 $ clang -framework Foundation obf.ll -o obf && ./obf
-2025-10-16 12:51:05.959 obf[7264:276542] Hello, World!
+2025-10-16 14:02:24.947 obf[10403:356883] Hello, World!
 ```
 
 Run the executables with Frida:
@@ -159,21 +161,21 @@ Run the executables with Frida:
 $ clang test.m -O3 -framework Foundation -o test
 $ frida-trace -f test -i main
 Instrumenting...                                                        
-main: Loaded handler at "/Users/gemesa/git-repos/phantom-pass/src/10-frida-deny-basic/__handlers__/test/main.js"
-Started tracing 1 function. Web UI available at http://localhost:50206/ 
-2025-10-16 12:51:52.000 test[7280:277197] Hello, World!
+main: Auto-generated handler at "/Users/gemesa/git-repos/phantom-pass/src/11-frida-deny-complex/__handlers__/test/main.js"
+Started tracing 1 function. Web UI available at http://localhost:50613/ 
+2025-10-16 14:01:45.840 test[10360:356143] Hello, World!
            /* TID 0x103 */
-    14 ms  main()
+   182 ms  main()
 Process terminated
 ```
 
 ```
 $ frida-trace -f obf -i main 
 Instrumenting...                                                        
-main: Loaded handler at "/Users/gemesa/git-repos/phantom-pass/src/10-frida-deny-basic/__handlers__/obf/main.js"
-Warning: Skipping "main": unable to intercept function at 0x104a08610; please file a bug
-Started tracing 1 function. Web UI available at http://localhost:50210/ 
-2025-10-16 12:51:57.320 obf[7290:277334] Hello, World!
+main: Loaded handler at "/Users/gemesa/git-repos/phantom-pass/src/11-frida-deny-complex/__handlers__/obf/main.js"
+Warning: Skipping "main": unable to intercept function at 0x10406c610; please file a bug
+Started tracing 1 function. Web UI available at http://localhost:50617/ 
+2025-10-16 14:01:50.438 obf[10376:356332] Hello, World!
 Process terminated
 ```
 
