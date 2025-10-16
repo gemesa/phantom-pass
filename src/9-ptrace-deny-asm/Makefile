@@ -27,7 +27,7 @@ run:
 	./obf
 
 format:
-	clang-format -i obf.cpp
+	clang-format -i obf.cpp test.m
 
 format-check:
 	clang-format --dry-run -Werror obf.cpp
