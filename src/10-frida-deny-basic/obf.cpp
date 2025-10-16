@@ -38,7 +38,7 @@ public:
           FunctionNames.count(F.getName().str()) == 0) {
         continue;
       }
-      if (F.isDeclaration() || F.getInstructionCount() == 0) {
+      if (F.isDeclaration()) {
         continue;
       }
       if (F.hasPrologueData()) {
