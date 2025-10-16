@@ -5,6 +5,7 @@ An LLVM pass that inserts an inline asm instruction sequence into (`mov	x16, x16
 Known limitations:
 - increased code size (negligible)
 - increased runtime penalty (negligible)
+- can be patched easily
 
 The source code is available [here](https://github.com/gemesa/phantom-pass/tree/main/src/10-frida-deny-basic).
 
