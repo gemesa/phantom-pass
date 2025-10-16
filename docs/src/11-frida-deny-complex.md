@@ -8,7 +8,7 @@ Known limitations:
 - increased code size (negligible)
 - increased runtime penalty (negligible)
 
-The source code is available [here](https://github.com/gemesa/phantom-pass/tree/main/src/10-frida-deny-basic).
+The source code is available [here](https://github.com/gemesa/phantom-pass/tree/main/src/11-frida-deny-complex).
 
 Generate the IR for our `main()` test code:
 
