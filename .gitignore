@@ -1,7 +1,10 @@
 tmp/
 .vscode/
+*.o
 *.dylib
+*.mi
 *.s
+*.bc
 *.ll
 test
 obf
