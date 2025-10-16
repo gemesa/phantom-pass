@@ -18,7 +18,7 @@ obf: obf.dylib obf.ll
 	clang -framework Foundation obf.ll -o obf
 
 clean:
-	rm test.ll obf.dylib obf.ll obf
+	rm test.ll obf.dylib obf.ll obf.s obf
 
 run:
 	./obf
