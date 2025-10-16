@@ -33,7 +33,7 @@ public:
   PreservedAnalyses run(Module &M, ModuleAnalysisManager &) {
     bool Changed = false;
 
-    std::vector<GlobalVariable *> StringGlobals = locateStrings(M);
+    SmallVector<GlobalVariable *, 128> StringGlobals = locateStrings(M);
 
     if (StringGlobals.empty()) {
       outs() << "StringBase64EncodePass: Could not locate any strings\n";
@@ -60,8 +60,8 @@ private:
     return rd();
   }
 
-  std::vector<GlobalVariable *> locateStrings(Module &M) {
-    std::vector<GlobalVariable *> StringGlobals;
+  SmallVector<GlobalVariable *, 128> locateStrings(Module &M) {
+    SmallVector<GlobalVariable *, 128> StringGlobals;
 
     for (GlobalVariable &GV : M.globals()) {
       if (GV.hasInitializer()) {
@@ -85,7 +85,7 @@ private:
   }
 
   bool encodeStrings(Module &M,
-                     const std::vector<GlobalVariable *> &StringGlobals,
+                     const SmallVector<GlobalVariable *, 128> &StringGlobals,
                      Function *DecodeFunction) {
     LLVMContext &Ctx = M.getContext();
     for (GlobalVariable *OrigGV : StringGlobals) {
@@ -102,7 +102,7 @@ private:
           M, EncodedArray->getType(), false, GlobalValue::PrivateLinkage,
           EncodedArray, EncName);
 
-      std::vector<Instruction *> UsesToReplace;
+      SmallVector<Instruction *, 16> UsesToReplace;
       for (User *U : OrigGV->users()) {
         if (auto *I = dyn_cast<Instruction>(U)) {
           UsesToReplace.push_back(I);

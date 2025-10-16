@@ -33,7 +33,7 @@ public:
   PreservedAnalyses run(Module &M, ModuleAnalysisManager &) {
     bool Changed = false;
 
-    std::vector<GlobalVariable *> StringGlobals = locateStrings(M);
+    SmallVector<GlobalVariable *, 128> StringGlobals = locateStrings(M);
 
     if (StringGlobals.empty()) {
       outs() << "StringEncryptionPass: Could not locate any strings\n";
@@ -60,8 +60,8 @@ private:
     return rd();
   }
 
-  std::vector<GlobalVariable *> locateStrings(Module &M) {
-    std::vector<GlobalVariable *> StringGlobals;
+  SmallVector<GlobalVariable *, 128> locateStrings(Module &M) {
+    SmallVector<GlobalVariable *, 128> StringGlobals;
 
     for (GlobalVariable &GV : M.globals()) {
       if (GV.hasInitializer()) {
@@ -76,7 +76,7 @@ private:
   }
 
   bool encryptStrings(Module &M,
-                      const std::vector<GlobalVariable *> &StringGlobals,
+                      const SmallVector<GlobalVariable *, 128> &StringGlobals,
                       Function *DecryptFunc) {
     LLVMContext &Ctx = M.getContext();
     for (GlobalVariable *OrigGV : StringGlobals) {
@@ -101,7 +101,7 @@ private:
       GlobalVariable *EncGV = new GlobalVariable(
           M, AT, false, GlobalValue::PrivateLinkage, EncryptedArray, EncName);
 
-      std::vector<Instruction *> UsesToReplace;
+      SmallVector<Instruction *, 16> UsesToReplace;
       for (User *U : OrigGV->users()) {
         if (auto *I = dyn_cast<Instruction>(U)) {
           UsesToReplace.push_back(I);
