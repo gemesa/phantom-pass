@@ -18,3 +18,4 @@
 - [`ptrace` deny (inline asm)](9-ptrace-deny-asm.md)
 - [Frida deny (basic)](10-frida-deny-basic.md)
 - [Frida deny (complex)](11-frida-deny-complex.md)
+- [Frida deny with runtime check](12-frida-deny-with-runtime-check.md)
