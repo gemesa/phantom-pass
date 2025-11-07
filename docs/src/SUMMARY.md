@@ -19,3 +19,4 @@
 - [Frida deny (basic)](10-frida-deny-basic.md)
 - [Frida deny (complex)](11-frida-deny-complex.md)
 - [Frida deny with runtime check](12-frida-deny-with-runtime-check.md)
+- [`sysctl` debugger check](13-sysctl-debugger-check.md)
