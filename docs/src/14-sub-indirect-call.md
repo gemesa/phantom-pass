@@ -1,6 +1,6 @@
 # Indirect call (via subtract)
 
-An LLVM pass that replaces direct function calls with indirect ones. Function addresses are encoded by subtracting a random offset and stored in the binary. At runtime the original addresses are decoded by adding the offset back (encoded address = address - offset --> address = encoded address + offset). The pass can be applied to all functions (`-passes="sub-indirect-call"`) or only to specified ones (`-passes="sub-indirect-call<main>"`).
+An LLVM pass that replaces direct function calls with indirect ones. Function addresses are encoded by subtracting a random offset and stored in the binary. At runtime the original addresses are decoded by adding the offset back (encoded address = address - offset, this means address = encoded address + offset). The pass can be applied to all functions (`-passes="sub-indirect-call"`) or only to specified ones (`-passes="sub-indirect-call<main>"`).
 
 Known limitations:
 - increased code size
