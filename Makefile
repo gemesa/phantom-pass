@@ -12,7 +12,8 @@ src/9-ptrace-deny-asm \
 src/10-frida-deny-basic \
 src/11-frida-deny-complex \
 src/12-frida-deny-with-runtime-check \
-src/13-sysctl-debugger-check
+src/13-sysctl-debugger-check \
+src/14-sub-indirect-call
 
 .PHONY: all clean run format format-check $(SUBDIRS)
 
