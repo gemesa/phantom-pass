@@ -1,6 +1,6 @@
 # Introduction
 
-Phantom pass is a collection of LLVM IR and machine code level obfuscation passes. The techniques are either extracted from reversed malware samples (e.g. [Mirai](https://shadowshell.io/mirai-sora-botnet) and [Hancitor](https://shadowshell.io/hancitor-loader)) or obtained via OSINT. The passes are primarily intended for AArch64, but some also work on other architectures. This book provides the supplementary documentation.
+Phantom pass is a collection of LLVM IR and machine code level obfuscation passes. The techniques are either extracted from reversed malware samples (e.g. [Mirai](https://shadowshell.io/mirai-sora-botnet), [Hancitor](https://shadowshell.io/hancitor-loader) and [XLoader](https://shadowshell.io/xloader)) or obtained via OSINT. The passes are primarily intended for AArch64, but some also work on other architectures. This book provides the supplementary documentation.
 
 The source code is available [here](https://github.com/gemesa/phantom-pass).
 
