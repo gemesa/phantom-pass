@@ -20,7 +20,7 @@ $ sudo ln -s /opt/homebrew/opt/llvm/bin/llvm-config /usr/local/bin/llvm-config
 ```
 $ git clone https://github.com/llvm/llvm-project.git
 $ cd llvm-project
-$ cmake -S llvm -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DLLVM_PARALLEL_LINK_JOBS=1 -DLLVM_ENABLE_PROJECTS="clang"
+$ cmake -S llvm -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DLLVM_PARALLEL_LINK_JOBS=1 -DLLVM_ENABLE_PROJECTS="clang"
 $ ninja -C build
 $ sudo ln -s /<path>/llvm-project/build/bin/opt /usr/local/bin/opt
 $ sudo ln -s /<path>/llvm-project/build/bin/llc /usr/local/bin/llc
