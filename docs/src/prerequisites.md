@@ -4,7 +4,9 @@
 
 ### LLVM
 
-There is already a version of LLVM preinstalled but it does not contain LLVM development tools (such as `opt`). For this reason, we install LLVM via `brew` but only add the missing tools to the path to avoid conflicts.
+There is already a version of LLVM preinstalled but it does not contain LLVM development tools (such as `opt`). For this reason, we only add the missing tools to the path to avoid conflicts. (Alternatively, `<llvm-path>/bin` can be added to the path, but this will shadow the preinstalled LLVM tools.)
+
+#### `brew`
 
 ```
 $ brew install llvm
@@ -13,7 +15,19 @@ $ sudo ln -s /opt/homebrew/opt/llvm/bin/llc /usr/local/bin/llc
 $ sudo ln -s /opt/homebrew/opt/llvm/bin/llvm-config /usr/local/bin/llvm-config
 ```
 
-Alternatively, add `/opt/homebrew/opt/llvm/bin` to the path. This will shadow the preinstalled LLVM tools.
+#### Build from source
+
+```
+$ git clone https://github.com/llvm/llvm-project.git
+$ cd llvm-project
+$ cmake -S llvm -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DLLVM_PARALLEL_LINK_JOBS=1 -DLLVM_ENABLE_PROJECTS="clang"
+$ ninja -C build
+$ sudo ln -s /<path>/llvm-project/build/bin/opt /usr/local/bin/opt
+$ sudo ln -s /<path>/llvm-project/build/bin/llc /usr/local/bin/llc
+$ sudo ln -s /<path>/llvm-project/build/bin/llvm-config /usr/local/bin/llvm-config
+```
+
+Refer to the [GettingStarted guide](https://llvm.org/docs/GettingStarted.html#getting-the-source-code-and-building-llvm) for more information.
 
 ### Boost
 
