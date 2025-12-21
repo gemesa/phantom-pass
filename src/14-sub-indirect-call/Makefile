@@ -12,7 +12,7 @@ test: test.ll add.ll
 	clang test.ll add.ll -o test
 
 obf.dylib: obf.cpp
-	clang++ -std=c++17 -O3 -Wall -Wextra -Wpedantic -Werror -Wno-deprecated-declarations -isystem $(shell llvm-config --includedir) -shared -fPIC $(shell llvm-config --cxxflags) obf.cpp $(shell llvm-config --ldflags --libs core support passes analysis transformutils target bitwriter) -o obf.dylib
+	clang++ -std=c++17 -O3 -Wall -Wextra -Wpedantic -Werror -Wno-deprecated-declarations -isystem $(shell llvm-config --includedir) -shared -fPIC $(shell llvm-config --cxxflags) obf.cpp -o obf.dylib
 
 obf.ll: obf.dylib test.ll
 	opt -load-pass-plugin=./obf.dylib -passes="sub-indirect-call" -S test.ll -o obf.ll

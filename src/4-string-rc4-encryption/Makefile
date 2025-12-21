@@ -9,7 +9,7 @@ test: test.ll
 	clang test.ll -o test
 
 obf.dylib: obf.cpp
-	clang++ -std=c++17 -O3 -Wall -Wextra -Wpedantic -Werror -Wno-deprecated-declarations -lcrypto -L/opt/homebrew/opt/libressl/lib -I/opt/homebrew/include -isystem $(shell llvm-config --includedir) -shared -fPIC $(shell llvm-config --cxxflags) obf.cpp $(shell llvm-config --ldflags --libs core support passes analysis transformutils target bitwriter) -o obf.dylib
+	clang++ -std=c++17 -O3 -Wall -Wextra -Wpedantic -Werror -Wno-deprecated-declarations -lcrypto -L/opt/homebrew/opt/libressl/lib -I/opt/homebrew/include -isystem $(shell llvm-config --includedir) -shared -fPIC $(shell llvm-config --cxxflags) obf.cpp -o obf.dylib
 
 obf.ll: obf.dylib test.ll
 	opt -load-pass-plugin=./obf.dylib -passes="string-rc4-encryption" -S test.ll -o obf.ll
