@@ -9,13 +9,13 @@ test: test.ll
 	clang -framework Foundation test.ll -o test
 
 asm.o: ../util/disassembler.cpp
-	clang++ -std=c++17 -O3 -Wall -Wextra -Wpedantic -Werror -Wno-deprecated-declarations -isystem $(shell llvm-config --includedir) -I ../util -shared -fPIC $(shell llvm-config --cxxflags) ../util/assembler.cpp  -o asm.o
+	clang++ -std=c++17 -O3 -Wall -Wextra -Wpedantic -Werror -Wno-deprecated-declarations -isystem $(shell llvm-config --includedir) -I ../util -shared -fPIC $(shell llvm-config --cxxflags) ../util/assembler.cpp -undefined dynamic_lookup -o asm.o
 
 disasm.o: ../util/assembler.cpp
-	clang++ -std=c++17 -O3 -Wall -Wextra -Wpedantic -Werror -Wno-deprecated-declarations -isystem $(shell llvm-config --includedir) -I ../util -shared -fPIC $(shell llvm-config --cxxflags) ../util/disassembler.cpp  -o disasm.o
+	clang++ -std=c++17 -O3 -Wall -Wextra -Wpedantic -Werror -Wno-deprecated-declarations -isystem $(shell llvm-config --includedir) -I ../util -shared -fPIC $(shell llvm-config --cxxflags) ../util/disassembler.cpp -undefined dynamic_lookup -o disasm.o
 
 obf.dylib: obf.cpp asm.o disasm.o
-	clang++ -std=c++17 -O3 -Wall -Wextra -Wpedantic -Werror -Wno-deprecated-declarations -isystem $(shell llvm-config --includedir) -I ../util -shared -fPIC $(shell llvm-config --cxxflags) obf.cpp asm.o disasm.o -o obf.dylib
+	clang++ -std=c++17 -O3 -Wall -Wextra -Wpedantic -Werror -Wno-deprecated-declarations -isystem $(shell llvm-config --includedir) -I ../util -shared -fPIC $(shell llvm-config --cxxflags) obf.cpp asm.o disasm.o -undefined dynamic_lookup -o obf.dylib
 
 obf.ll: obf.dylib test.ll
 	opt -load-pass-plugin=./obf.dylib -passes="frida-deny" -S test.ll -o obf.ll
