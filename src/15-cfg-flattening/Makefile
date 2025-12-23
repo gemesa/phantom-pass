@@ -3,7 +3,7 @@
 all: test.ll test obf.dylib obf.ll obf
 
 test.ll: test.c
-	clang test.c -O0 -Xclang -disable-O0-optnone -S -emit-llvm -o test.ll
+	clang test.c -O0 -Xclang -disable-O0-optnone -fno-discard-value-names -S -emit-llvm -o test.ll
 
 test: test.ll
 	clang test.ll -o test
