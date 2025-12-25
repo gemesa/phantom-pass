@@ -226,7 +226,6 @@ Before:
 After:
 ![CFG after](./assets/15-cfg-flattening-cfg-after.svg)
 
-
 Build the modified IR and run the executable:
 
 > Note: do not pass `-O3` or other optimization-related options at this point as they might interfere with the applied obfuscation methods.
