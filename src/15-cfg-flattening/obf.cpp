@@ -25,12 +25,6 @@ private:
   SmallSet<StringRef, 8> FunctionNames;
   std::unique_ptr<RandomNumberGenerator> RNG;
 
-  uint64_t getRandomOffset() {
-    std::uniform_int_distribution<uint64_t> Dist(
-        1, std::numeric_limits<uint8_t>::max());
-    return Dist(*RNG);
-  }
-
 public:
   FlattenCfgPass() = default;
 
