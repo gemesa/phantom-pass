@@ -16,7 +16,6 @@ Not yet supported:
 - Entry blocks with switch instructions.
 - Switch instructions in non-entry blocks.
 
-
 The source code is available [here](https://github.com/gemesa/phantom-pass/tree/main/src/15-cfg-flattening).
 
 Generate the IR for our `main()` test code:
@@ -211,7 +210,7 @@ attributes #1 = { "frame-pointer"="all" "no-trapping-math"="true" "stack-protect
 
 **Graphs:**
 
-> Note: the graphs are generated via the following commands
+> Note: the graphs are generated via the following commands:
 >
 > `$ opt -passes=dot-cfg test.ll -disable-output`
 >
