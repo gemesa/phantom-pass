@@ -213,15 +213,15 @@ attributes #1 = { "frame-pointer"="all" "no-trapping-math"="true" "stack-protect
 
 > Note: the graphs are generated via the following commands
 > `$ opt -passes=dot-cfg test.ll -disable-output`
-> `$ dot -Tsvg .sum_to_n.dot -o cfg_before.svg`
+> `$ dot -Tsvg .sum_to_n.dot -o 15-cfg-flattening-cfg-before.svg`
 > `$ opt -passes=dot-cfg obf.ll -disable-output`
-> `$ dot -Tsvg .sum_to_n.dot -o cfg_after.svg`
+> `$ dot -Tsvg .sum_to_n.dot -o 15-cfg-flattening-cfg-after.svg`
 
 Before:
-![CFG before](./assets/cfg_before.svg)
+![CFG before](./assets/15-cfg-flattening-cfg-before.svg)
 
 After:
-![CFG after](./assets/cfg_after.svg)
+![CFG after](./assets/15-cfg-flattening-cfg-after.svg)
 
 
 Build the modified IR and run the executable:
