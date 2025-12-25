@@ -23,7 +23,7 @@ Generate the IR for our `main()` test code:
 > Note: we do not optimize the generated IR in this case before applying our obfuscation pass. The reason is that the obfuscation pass only supports entry blocks with unconditional branches. After optimization, the unconditional branches might get replaced with conditional ones when compiling the test code.
 
 ```
-$ clang test.c -O0 -Xclang -disable-O0-optnone -S -emit-llvm -o test.ll
+$ clang test.c -O0 -Xclang -disable-O0-optnone -fno-discard-value-names -S -emit-llvm -o test.ll
 ```
 
 Check the output:
