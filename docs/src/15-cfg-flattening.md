@@ -7,14 +7,14 @@ Known limitations:
 - slightly increased runtime penalty
 
 Currently supported:
-- Entry blocks with unconditional branches.
-- Unconditional branches between non-entry blocks.
-- Conditional branches between non-entry blocks.
+- entry blocks with unconditional branches
+- unconditional branches between non-entry blocks
+- conditional branches between non-entry blocks
 
 Not yet supported:
-- Entry blocks with conditional branches.
-- Entry blocks with switch instructions.
-- Switch instructions in non-entry blocks.
+- entry blocks with conditional branches
+- entry blocks with switch instructions
+- switch instructions in non-entry blocks
 
 The source code is available [here](https://github.com/gemesa/phantom-pass/tree/main/src/15-cfg-flattening).
 

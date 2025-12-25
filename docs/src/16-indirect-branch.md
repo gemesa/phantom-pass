@@ -8,11 +8,11 @@ Known limitations:
 - indirect branches may limit certain compiler optimizations (because they make it harder for the compiler to reason about control flow)
 
 Currently supported:
-- Unconditional branches.
-- Conditional branches.
+- unconditional branches
+- conditional branches
 
 Not yet supported:
-- Switch instructions.
+- switch instructions
 
 The source code is available [here](https://github.com/gemesa/phantom-pass/tree/main/src/16-indirect-branch).
 
