@@ -14,7 +14,8 @@ src/11-frida-deny-complex \
 src/12-frida-deny-with-runtime-check \
 src/13-sysctl-debugger-check \
 src/14-sub-indirect-call \
-src/15-cfg-flattening
+src/15-cfg-flattening \
+src/16-indirect-branch
 
 .PHONY: all clean run format format-check $(SUBDIRS)
 

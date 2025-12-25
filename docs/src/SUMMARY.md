@@ -22,3 +22,4 @@
 - [`sysctl` debugger check](13-sysctl-debugger-check.md)
 - [Indirect call (via subtract)](14-sub-indirect-call.md)
 - [CFG flattening](15-cfg-flattening.md)
+- [Indirect branch](16-indirect-branch.md)
