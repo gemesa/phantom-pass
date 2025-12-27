@@ -23,3 +23,4 @@
 - [Indirect call (via subtract)](14-sub-indirect-call.md)
 - [CFG flattening](15-cfg-flattening.md)
 - [Indirect branch](16-indirect-branch.md)
+- [Opaque predicate](17-opaque-predicate.md)

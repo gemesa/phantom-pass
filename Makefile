@@ -15,7 +15,8 @@ src/12-frida-deny-with-runtime-check \
 src/13-sysctl-debugger-check \
 src/14-sub-indirect-call \
 src/15-cfg-flattening \
-src/16-indirect-branch
+src/16-indirect-branch \
+src/17-opaque-predicate \
 
 .PHONY: all clean run format format-check $(SUBDIRS)
 
