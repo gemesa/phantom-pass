@@ -7,6 +7,7 @@ The opaque predicates are based on table 1 (page 5) of [When Are Opaque Predicat
 Known limitations:
 - slightly increased code size
 - slightly increased runtime penalty
+- can be attacked/defeated by methods detailed in the paper above
 
 The source code is available [here](https://github.com/gemesa/phantom-pass/tree/main/src/17-opaque-predicate).
 
