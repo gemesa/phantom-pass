@@ -34,7 +34,6 @@ enum VMOpcode : uint8_t {
 class VirtualMachinePass : public PassInfoMixin<VirtualMachinePass> {
 private:
   SmallSet<StringRef, 8> FunctionNames;
-  std::unique_ptr<RandomNumberGenerator> RNG;
   Function *VMDispatcher = nullptr;
 
 public:
@@ -45,7 +44,6 @@ public:
 
   PreservedAnalyses run(Module &M, ModuleAnalysisManager &) {
     bool Changed = false;
-    RNG = M.createRNG("virtual-machine");
     VMDispatcher = getOrCreateVMDispatcher(M);
 
     for (Function &F : M) {
