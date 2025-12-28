@@ -24,3 +24,4 @@
 - [CFG flattening](15-cfg-flattening.md)
 - [Indirect branch](16-indirect-branch.md)
 - [Opaque predicate](17-opaque-predicate.md)
+- [Virtual machine (instruction based)](18-virtual-machine-instruction.md)

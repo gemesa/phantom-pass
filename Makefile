@@ -17,6 +17,7 @@ src/14-sub-indirect-call \
 src/15-cfg-flattening \
 src/16-indirect-branch \
 src/17-opaque-predicate \
+src/18-virtual-machine
 
 .PHONY: all clean run format format-check $(SUBDIRS)
 
