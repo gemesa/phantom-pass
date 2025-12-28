@@ -181,7 +181,7 @@ attributes #3 = { noinline optnone }
 !5 = !{!"Homebrew clang version 21.1.8"}
 ```
 
-If we load the binaries into Ghidra, we can see that `_compute` is harder to understood than without the VM. Still, this is a very basic VM, so it can be reversed rather quickly.
+If we load the binaries into Ghidra, we can see that `_compute` is harder to understand than without the VM. Still, this is a very basic VM, so it can be reversed rather quickly.
 
 Before:
 
