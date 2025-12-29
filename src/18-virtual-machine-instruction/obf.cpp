@@ -174,13 +174,13 @@ private:
     };
 
     EmitBinaryOp(AddBB, Instruction::Add, "add_res");
-    EmitBinaryOp(MulBB, Instruction::Mul, "add_res");
-    EmitBinaryOp(SubBB, Instruction::Sub, "add_res");
-    EmitBinaryOp(AndBB, Instruction::And, "add_res");
-    EmitBinaryOp(OrBB, Instruction::Or, "add_res");
-    EmitBinaryOp(XorBB, Instruction::Xor, "add_res");
-    EmitBinaryOp(ShlBB, Instruction::Shl, "add_res");
-    EmitBinaryOp(ShrBB, Instruction::LShr, "add_res");
+    EmitBinaryOp(MulBB, Instruction::Mul, "mul_res");
+    EmitBinaryOp(SubBB, Instruction::Sub, "sub_res");
+    EmitBinaryOp(AndBB, Instruction::And, "and_res");
+    EmitBinaryOp(OrBB, Instruction::Or, "or_res");
+    EmitBinaryOp(XorBB, Instruction::Xor, "xor_res");
+    EmitBinaryOp(ShlBB, Instruction::Shl, "shl_res");
+    EmitBinaryOp(ShrBB, Instruction::LShr, "lshr_res");
 
     Builder.SetInsertPoint(DefaultBB);
     Builder.CreateRetVoid();

@@ -156,52 +156,52 @@ add:                                              ; preds = %entry
   ret void
 
 sub:                                              ; preds = %entry
-  %add_res5 = sub i64 %a, %b
-  %dst_ext6 = zext i8 %dst to i64
-  %dst_ptr7 = getelementptr inbounds [256 x i64], ptr @__vm_regs, i64 0, i64 %dst_ext6
-  store i64 %add_res5, ptr %dst_ptr7, align 8
+  %sub_res = sub i64 %a, %b
+  %dst_ext4 = zext i8 %dst to i64
+  %dst_ptr5 = getelementptr inbounds [256 x i64], ptr @__vm_regs, i64 0, i64 %dst_ext4
+  store i64 %sub_res, ptr %dst_ptr5, align 8
   ret void
 
 mul:                                              ; preds = %entry
-  %add_res2 = mul i64 %a, %b
-  %dst_ext3 = zext i8 %dst to i64
-  %dst_ptr4 = getelementptr inbounds [256 x i64], ptr @__vm_regs, i64 0, i64 %dst_ext3
-  store i64 %add_res2, ptr %dst_ptr4, align 8
+  %mul_res = mul i64 %a, %b
+  %dst_ext2 = zext i8 %dst to i64
+  %dst_ptr3 = getelementptr inbounds [256 x i64], ptr @__vm_regs, i64 0, i64 %dst_ext2
+  store i64 %mul_res, ptr %dst_ptr3, align 8
   ret void
 
 and:                                              ; preds = %entry
-  %add_res8 = and i64 %a, %b
-  %dst_ext9 = zext i8 %dst to i64
-  %dst_ptr10 = getelementptr inbounds [256 x i64], ptr @__vm_regs, i64 0, i64 %dst_ext9
-  store i64 %add_res8, ptr %dst_ptr10, align 8
+  %and_res = and i64 %a, %b
+  %dst_ext6 = zext i8 %dst to i64
+  %dst_ptr7 = getelementptr inbounds [256 x i64], ptr @__vm_regs, i64 0, i64 %dst_ext6
+  store i64 %and_res, ptr %dst_ptr7, align 8
   ret void
 
 or:                                               ; preds = %entry
-  %add_res11 = or i64 %a, %b
-  %dst_ext12 = zext i8 %dst to i64
-  %dst_ptr13 = getelementptr inbounds [256 x i64], ptr @__vm_regs, i64 0, i64 %dst_ext12
-  store i64 %add_res11, ptr %dst_ptr13, align 8
+  %or_res = or i64 %a, %b
+  %dst_ext8 = zext i8 %dst to i64
+  %dst_ptr9 = getelementptr inbounds [256 x i64], ptr @__vm_regs, i64 0, i64 %dst_ext8
+  store i64 %or_res, ptr %dst_ptr9, align 8
   ret void
 
 xor:                                              ; preds = %entry
-  %add_res14 = xor i64 %a, %b
-  %dst_ext15 = zext i8 %dst to i64
-  %dst_ptr16 = getelementptr inbounds [256 x i64], ptr @__vm_regs, i64 0, i64 %dst_ext15
-  store i64 %add_res14, ptr %dst_ptr16, align 8
+  %xor_res = xor i64 %a, %b
+  %dst_ext10 = zext i8 %dst to i64
+  %dst_ptr11 = getelementptr inbounds [256 x i64], ptr @__vm_regs, i64 0, i64 %dst_ext10
+  store i64 %xor_res, ptr %dst_ptr11, align 8
   ret void
 
 shl:                                              ; preds = %entry
-  %add_res17 = shl i64 %a, %b
-  %dst_ext18 = zext i8 %dst to i64
-  %dst_ptr19 = getelementptr inbounds [256 x i64], ptr @__vm_regs, i64 0, i64 %dst_ext18
-  store i64 %add_res17, ptr %dst_ptr19, align 8
+  %shl_res = shl i64 %a, %b
+  %dst_ext12 = zext i8 %dst to i64
+  %dst_ptr13 = getelementptr inbounds [256 x i64], ptr @__vm_regs, i64 0, i64 %dst_ext12
+  store i64 %shl_res, ptr %dst_ptr13, align 8
   ret void
 
 shr:                                              ; preds = %entry
-  %add_res20 = lshr i64 %a, %b
-  %dst_ext21 = zext i8 %dst to i64
-  %dst_ptr22 = getelementptr inbounds [256 x i64], ptr @__vm_regs, i64 0, i64 %dst_ext21
-  store i64 %add_res20, ptr %dst_ptr22, align 8
+  %lshr_res = lshr i64 %a, %b
+  %dst_ext14 = zext i8 %dst to i64
+  %dst_ptr15 = getelementptr inbounds [256 x i64], ptr @__vm_regs, i64 0, i64 %dst_ext14
+  store i64 %lshr_res, ptr %dst_ptr15, align 8
   ret void
 
 default:                                          ; preds = %entry
