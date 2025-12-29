@@ -35,6 +35,11 @@ class VirtualMachinePass : public PassInfoMixin<VirtualMachinePass> {
 private:
   SmallSet<StringRef, 8> FunctionNames;
   Function *VMDispatcher = nullptr;
+  GlobalVariable *RegisterFile = nullptr;
+
+  static constexpr uint8_t REG_SRC0 = 0;
+  static constexpr uint8_t REG_SRC1 = 1;
+  static constexpr uint8_t REG_DST = 2;
 
 public:
   VirtualMachinePass() = default;
@@ -44,11 +49,16 @@ public:
 
   PreservedAnalyses run(Module &M, ModuleAnalysisManager &) {
     bool Changed = false;
+    RegisterFile = getOrCreateRegisterFile(M);
     VMDispatcher = getOrCreateVMDispatcher(M);
 
     for (Function &F : M) {
       if (!FunctionNames.empty() &&
           FunctionNames.count(F.getName().str()) == 0) {
+        continue;
+      }
+
+      if (&F == VMDispatcher) {
         continue;
       }
 
@@ -67,6 +77,20 @@ public:
   }
 
 private:
+  GlobalVariable *getOrCreateRegisterFile(Module &M) {
+    if (GlobalVariable *GV = M.getGlobalVariable("__vm_regs")) {
+      return GV;
+    }
+
+    LLVMContext &Ctx = M.getContext();
+    Type *I64Ty = Type::getInt64Ty(Ctx);
+    ArrayType *RegFileType = ArrayType::get(I64Ty, 256);
+
+    return new GlobalVariable(M, RegFileType, false,
+                              GlobalValue::PrivateLinkage,
+                              Constant::getNullValue(RegFileType), "__vm_regs");
+  }
+
   Function *getOrCreateVMDispatcher(Module &M) {
     LLVMContext &Ctx = M.getContext();
 
@@ -76,9 +100,11 @@ private:
 
     IntegerType *I8Ty = Type::getInt8Ty(Ctx);
     IntegerType *I64Ty = Type::getInt64Ty(Ctx);
+    Type *VoidTy = Type::getVoidTy(Ctx);
 
-    // int64_t __vm_dispatch(uint8_t op, int64_t a, int64_t b);
-    FunctionType *FTy = FunctionType::get(I64Ty, {I8Ty, I64Ty, I64Ty}, false);
+    // void __vm_dispatch(uint8_t op, uint8_t dst, uint8_t src0, uint8_t src1);
+    FunctionType *FTy =
+        FunctionType::get(VoidTy, {I8Ty, I8Ty, I8Ty, I8Ty}, false);
 
     Function *F =
         Function::Create(FTy, Function::PrivateLinkage, "__vm_dispatch", M);
@@ -89,11 +115,13 @@ private:
     F->addFnAttr(Attribute::OptimizeNone);
 
     Argument *OpArg = F->getArg(0);
-    Argument *AArg = F->getArg(1);
-    Argument *BArg = F->getArg(2);
+    Argument *DstArg = F->getArg(1);
+    Argument *Src0Arg = F->getArg(2);
+    Argument *Src1Arg = F->getArg(3);
     OpArg->setName("op");
-    AArg->setName("a");
-    BArg->setName("b");
+    DstArg->setName("dst");
+    Src0Arg->setName("src0");
+    Src1Arg->setName("src1");
 
     BasicBlock *EntryBB = BasicBlock::Create(Ctx, "entry", F);
     BasicBlock *AddBB = BasicBlock::Create(Ctx, "add", F);
@@ -108,6 +136,20 @@ private:
 
     IRBuilder<> Builder(Ctx);
     Builder.SetInsertPoint(EntryBB);
+
+    Value *Src0Ext = Builder.CreateZExt(Src0Arg, I64Ty, "src0_ext");
+    Value *Src1Ext = Builder.CreateZExt(Src1Arg, I64Ty, "src1_ext");
+
+    Value *Src0Ptr =
+        Builder.CreateInBoundsGEP(RegisterFile->getValueType(), RegisterFile,
+                                  {Builder.getInt64(0), Src0Ext}, "src0_ptr");
+    Value *Src1Ptr =
+        Builder.CreateInBoundsGEP(RegisterFile->getValueType(), RegisterFile,
+                                  {Builder.getInt64(0), Src1Ext}, "src0_ptr");
+
+    Value *A = Builder.CreateLoad(I64Ty, Src0Ptr, "a");
+    Value *B = Builder.CreateLoad(I64Ty, Src1Ptr, "b");
+
     SwitchInst *Switch = Builder.CreateSwitch(OpArg, DefaultBB, 8);
     Switch->addCase(ConstantInt::get(I8Ty, VM_ADD), AddBB);
     Switch->addCase(ConstantInt::get(I8Ty, VM_SUB), SubBB);
@@ -121,8 +163,14 @@ private:
     auto EmitBinaryOp = [&](BasicBlock *BB, Instruction::BinaryOps BinOp,
                             const char *Name) {
       Builder.SetInsertPoint(BB);
-      Value *Result = Builder.CreateBinOp(BinOp, AArg, BArg, Name);
-      Builder.CreateRet(Result);
+      Value *Result = Builder.CreateBinOp(BinOp, A, B, Name);
+      Value *DstExt = Builder.CreateZExt(DstArg, I64Ty, "dst_ext");
+      Value *DstPtr =
+          Builder.CreateInBoundsGEP(RegisterFile->getValueType(), RegisterFile,
+                                    {Builder.getInt64(0), DstExt}, "dst_ptr");
+      Builder.CreateStore(Result, DstPtr);
+
+      Builder.CreateRetVoid();
     };
 
     EmitBinaryOp(AddBB, Instruction::Add, "add_res");
@@ -135,7 +183,7 @@ private:
     EmitBinaryOp(ShrBB, Instruction::LShr, "add_res");
 
     Builder.SetInsertPoint(DefaultBB);
-    Builder.CreateRet(ConstantInt::get(I64Ty, 0));
+    Builder.CreateRetVoid();
 
     return F;
   }
@@ -207,10 +255,26 @@ private:
       Value *AExt = Builder.CreateSExt(A, I64Ty, "a_ext");
       Value *BExt = Builder.CreateSExt(B, I64Ty, "b_ext");
 
-      Value *OpcodeVal = ConstantInt::get(I8Ty, Opcode);
+      Value *Src0Ptr = Builder.CreateInBoundsGEP(
+          RegisterFile->getValueType(), RegisterFile,
+          {Builder.getInt64(0), Builder.getInt64(REG_SRC0)}, "src0_ptr");
+      Value *Src1Ptr = Builder.CreateInBoundsGEP(
+          RegisterFile->getValueType(), RegisterFile,
+          {Builder.getInt64(0), Builder.getInt64(REG_SRC1)}, "src1_ptr");
 
-      Value *Result = Builder.CreateCall(VMDispatcher, {OpcodeVal, AExt, BExt},
-                                         "vm_result");
+      Builder.CreateStore(AExt, Src0Ptr);
+      Builder.CreateStore(BExt, Src1Ptr);
+
+      Builder.CreateCall(VMDispatcher, {ConstantInt::get(I8Ty, Opcode),
+                                        ConstantInt::get(I8Ty, REG_DST),
+                                        ConstantInt::get(I8Ty, REG_SRC0),
+                                        ConstantInt::get(I8Ty, REG_SRC1)});
+
+      Value *DstPtr = Builder.CreateInBoundsGEP(
+          RegisterFile->getValueType(), RegisterFile,
+          {Builder.getInt64(0), Builder.getInt64(REG_DST)}, "dst_ptr");
+
+      Value *Result = Builder.CreateLoad(I64Ty, DstPtr, "vm_result");
 
       Value *ResultTrunc = Builder.CreateTrunc(Result, OrigTy, "vm_trunc");
 

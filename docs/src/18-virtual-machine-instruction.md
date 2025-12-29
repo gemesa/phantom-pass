@@ -1,8 +1,8 @@
-# Virtual machine (instruction based)
+# Virtual machine (instruction-based)
 
-An LLVM pass that replaces arithmetic instructions with calls to a VM dispatcher. Instead of executing `add`, `sub`, `mul`, etc. directly, the pass converts them into `__vm_dispatch(opcode, a, b)` calls (a switch-based interpreter that runs the operation at runtime).
+An LLVM pass that replaces arithmetic instructions with calls to a register-based VM. Instead of executing `add`, `sub`, `mul`, etc. directly, operands are stored into a global register file, then `__vm_dispatch(opcode, dst, src0, src1)` executes the operation and writes the result back to a destination register. This means that before calling `__vm_dispatch`, the inputs must be copied into the `src0` and `src1` registers, and the result must be read from the `dst` register.
 
-This is a simplified, instruction-level approach. Commercial tools usually virtualize entire functions or regions and hide control flow inside the VM. Here, we only virtualize individual operations while keeping branches and loops native.
+This is a simplified, instruction-level approach (this is why we call it "instruction-based"). Commercial tools usually virtualize entire functions or regions and hide control flow inside the VM. Here, we only virtualize individual operations while keeping branches and loops native.
 
 Known limitations:
 - significantly increased code size
@@ -83,23 +83,36 @@ target datalayout = "e-m:o-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-n32:
 target triple = "arm64-apple-macosx15.0.0"
 
 @.str = private unnamed_addr constant [12 x i8] c"Result: %d\0A\00", align 1
+@__vm_regs = private global [256 x i64] zeroinitializer
 
 ; Function Attrs: mustprogress nofree noinline norecurse nosync nounwind ssp willreturn memory(none) uwtable(sync)
 define i32 @compute(i32 noundef %a, i32 noundef %b) local_unnamed_addr #0 {
 entry:
   %a_ext = sext i32 %b to i64
   %b_ext = sext i32 %a to i64
-  %vm_result = call i64 @__vm_dispatch(i8 1, i64 %a_ext, i64 %b_ext)
+  store i64 %a_ext, ptr @__vm_regs, align 8
+  store i64 %b_ext, ptr getelementptr inbounds ([256 x i64], ptr @__vm_regs, i64 0, i64 1), align 8
+  call void @__vm_dispatch(i8 1, i8 2, i8 0, i8 1)
+  %vm_result = load i64, ptr getelementptr inbounds ([256 x i64], ptr @__vm_regs, i64 0, i64 2), align 8
   %vm_trunc = trunc i64 %vm_result to i32
   %a_ext1 = sext i32 %vm_trunc to i64
-  %vm_result2 = call i64 @__vm_dispatch(i8 7, i64 %a_ext1, i64 1)
+  store i64 %a_ext1, ptr @__vm_regs, align 8
+  store i64 1, ptr getelementptr inbounds ([256 x i64], ptr @__vm_regs, i64 0, i64 1), align 8
+  call void @__vm_dispatch(i8 7, i8 2, i8 0, i8 1)
+  %vm_result2 = load i64, ptr getelementptr inbounds ([256 x i64], ptr @__vm_regs, i64 0, i64 2), align 8
   %vm_trunc3 = trunc i64 %vm_result2 to i32
   %a_ext4 = sext i32 %vm_trunc3 to i64
-  %vm_result5 = call i64 @__vm_dispatch(i8 6, i64 %a_ext4, i64 255)
+  store i64 %a_ext4, ptr @__vm_regs, align 8
+  store i64 255, ptr getelementptr inbounds ([256 x i64], ptr @__vm_regs, i64 0, i64 1), align 8
+  call void @__vm_dispatch(i8 6, i8 2, i8 0, i8 1)
+  %vm_result5 = load i64, ptr getelementptr inbounds ([256 x i64], ptr @__vm_regs, i64 0, i64 2), align 8
   %vm_trunc6 = trunc i64 %vm_result5 to i32
   %a_ext7 = sext i32 %vm_trunc6 to i64
   %b_ext8 = sext i32 %a to i64
-  %vm_result9 = call i64 @__vm_dispatch(i8 2, i64 %a_ext7, i64 %b_ext8)
+  store i64 %a_ext7, ptr @__vm_regs, align 8
+  store i64 %b_ext8, ptr getelementptr inbounds ([256 x i64], ptr @__vm_regs, i64 0, i64 1), align 8
+  call void @__vm_dispatch(i8 2, i8 2, i8 0, i8 1)
+  %vm_result9 = load i64, ptr getelementptr inbounds ([256 x i64], ptr @__vm_regs, i64 0, i64 2), align 8
   %vm_trunc10 = trunc i64 %vm_result9 to i32
   ret i32 %vm_trunc10
 }
@@ -116,8 +129,14 @@ entry:
 declare noundef i32 @printf(ptr noundef readonly captures(none), ...) local_unnamed_addr #2
 
 ; Function Attrs: noinline optnone
-define private i64 @__vm_dispatch(i8 %op, i64 %a, i64 %b) #3 {
+define private void @__vm_dispatch(i8 %op, i8 %dst, i8 %src0, i8 %src1) #3 {
 entry:
+  %src0_ext = zext i8 %src0 to i64
+  %src1_ext = zext i8 %src1 to i64
+  %src0_ptr = getelementptr inbounds [256 x i64], ptr @__vm_regs, i64 0, i64 %src0_ext
+  %src0_ptr1 = getelementptr inbounds [256 x i64], ptr @__vm_regs, i64 0, i64 %src1_ext
+  %a = load i64, ptr %src0_ptr, align 8
+  %b = load i64, ptr %src0_ptr1, align 8
   switch i8 %op, label %default [
     i8 1, label %add
     i8 2, label %sub
@@ -131,38 +150,62 @@ entry:
 
 add:                                              ; preds = %entry
   %add_res = add i64 %a, %b
-  ret i64 %add_res
+  %dst_ext = zext i8 %dst to i64
+  %dst_ptr = getelementptr inbounds [256 x i64], ptr @__vm_regs, i64 0, i64 %dst_ext
+  store i64 %add_res, ptr %dst_ptr, align 8
+  ret void
 
 sub:                                              ; preds = %entry
-  %add_res2 = sub i64 %a, %b
-  ret i64 %add_res2
+  %add_res5 = sub i64 %a, %b
+  %dst_ext6 = zext i8 %dst to i64
+  %dst_ptr7 = getelementptr inbounds [256 x i64], ptr @__vm_regs, i64 0, i64 %dst_ext6
+  store i64 %add_res5, ptr %dst_ptr7, align 8
+  ret void
 
 mul:                                              ; preds = %entry
-  %add_res1 = mul i64 %a, %b
-  ret i64 %add_res1
+  %add_res2 = mul i64 %a, %b
+  %dst_ext3 = zext i8 %dst to i64
+  %dst_ptr4 = getelementptr inbounds [256 x i64], ptr @__vm_regs, i64 0, i64 %dst_ext3
+  store i64 %add_res2, ptr %dst_ptr4, align 8
+  ret void
 
 and:                                              ; preds = %entry
-  %add_res3 = and i64 %a, %b
-  ret i64 %add_res3
+  %add_res8 = and i64 %a, %b
+  %dst_ext9 = zext i8 %dst to i64
+  %dst_ptr10 = getelementptr inbounds [256 x i64], ptr @__vm_regs, i64 0, i64 %dst_ext9
+  store i64 %add_res8, ptr %dst_ptr10, align 8
+  ret void
 
 or:                                               ; preds = %entry
-  %add_res4 = or i64 %a, %b
-  ret i64 %add_res4
+  %add_res11 = or i64 %a, %b
+  %dst_ext12 = zext i8 %dst to i64
+  %dst_ptr13 = getelementptr inbounds [256 x i64], ptr @__vm_regs, i64 0, i64 %dst_ext12
+  store i64 %add_res11, ptr %dst_ptr13, align 8
+  ret void
 
 xor:                                              ; preds = %entry
-  %add_res5 = xor i64 %a, %b
-  ret i64 %add_res5
+  %add_res14 = xor i64 %a, %b
+  %dst_ext15 = zext i8 %dst to i64
+  %dst_ptr16 = getelementptr inbounds [256 x i64], ptr @__vm_regs, i64 0, i64 %dst_ext15
+  store i64 %add_res14, ptr %dst_ptr16, align 8
+  ret void
 
 shl:                                              ; preds = %entry
-  %add_res6 = shl i64 %a, %b
-  ret i64 %add_res6
+  %add_res17 = shl i64 %a, %b
+  %dst_ext18 = zext i8 %dst to i64
+  %dst_ptr19 = getelementptr inbounds [256 x i64], ptr @__vm_regs, i64 0, i64 %dst_ext18
+  store i64 %add_res17, ptr %dst_ptr19, align 8
+  ret void
 
 shr:                                              ; preds = %entry
-  %add_res7 = lshr i64 %a, %b
-  ret i64 %add_res7
+  %add_res20 = lshr i64 %a, %b
+  %dst_ext21 = zext i8 %dst to i64
+  %dst_ptr22 = getelementptr inbounds [256 x i64], ptr @__vm_regs, i64 0, i64 %dst_ext21
+  store i64 %add_res20, ptr %dst_ptr22, align 8
+  ret void
 
 default:                                          ; preds = %entry
-  ret i64 0
+  ret void
 }
 
 attributes #0 = { mustprogress nofree noinline norecurse nosync nounwind ssp willreturn memory(none) uwtable(sync) "frame-pointer"="non-leaf" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="apple-m1" "target-features"="+aes,+altnzcv,+ccdp,+ccidx,+ccpp,+complxnum,+crc,+dit,+dotprod,+flagm,+fp-armv8,+fp16fml,+fptoint,+fullfp16,+jsconv,+lse,+neon,+pauth,+perfmon,+predres,+ras,+rcpc,+rdm,+sb,+sha2,+sha3,+specrestrict,+ssbs,+v8.1a,+v8.2a,+v8.3a,+v8.4a,+v8a" }
@@ -196,46 +239,65 @@ int _compute(int param_1,int param_2)
 After:
 
 ```c
-void _compute(int param_1,int param_2)
+undefined8 _compute(int param_1,int param_2)
 
 {
-  int iVar1;
-  
-  iVar1 = FUN_100000518(1,(long)param_2,(long)param_1);
-  iVar1 = FUN_100000518(7,(long)iVar1,1);
-  iVar1 = FUN_100000518(6,(long)iVar1,0xff);
-  FUN_100000518(2,(long)iVar1,(long)param_1);
-  return;
+  DAT_100008000 = (long)param_2;
+  DAT_100008008 = (long)param_1;
+  FUN_100000644(1);
+  DAT_100008000 = (long)(int)DAT_100008010;
+  DAT_100008008 = 1;
+  FUN_100000644(7,2,0,1);
+  DAT_100008000 = (long)(int)DAT_100008010;
+  DAT_100008008 = 0xff;
+  FUN_100000644(6,2,0,1);
+  DAT_100008000 = (long)(int)DAT_100008010;
+  DAT_100008008 = (long)param_1;
+  FUN_100000644(2,2,0,1);
+  return DAT_100008010;
 }
 
-ulong FUN_100000518(char param_1,ulong param_2,ulong param_3)
+void FUN_100000644(char param_1,uint param_2,ulong param_3,ulong param_4)
 
 {
+  ulong uVar1;
+  ulong uVar2;
+  
+  uVar2 = (&DAT_100008000)[param_3 & 0xff];
+  uVar1 = (&DAT_100008000)[param_4 & 0xff];
   if (param_1 == '\x01') {
-    return param_2 + param_3;
+    (&DAT_100008000)[(ulong)param_2 & 0xff] = uVar2 + uVar1;
+    return;
   }
   if (param_1 == '\x02') {
-    return param_2 - param_3;
+    (&DAT_100008000)[(ulong)param_2 & 0xff] = uVar2 - uVar1;
+    return;
   }
   if (param_1 == '\x03') {
-    return param_2 * param_3;
+    (&DAT_100008000)[(ulong)param_2 & 0xff] = uVar2 * uVar1;
+    return;
   }
   if (param_1 == '\x04') {
-    return param_2 & param_3;
+    (&DAT_100008000)[(ulong)param_2 & 0xff] = uVar2 & uVar1;
+    return;
   }
   if (param_1 == '\x05') {
-    return param_2 | param_3;
+    (&DAT_100008000)[(ulong)param_2 & 0xff] = uVar2 | uVar1;
+    return;
   }
   if (param_1 == '\x06') {
-    return param_2 ^ param_3;
+    (&DAT_100008000)[(ulong)param_2 & 0xff] = uVar2 ^ uVar1;
+    return;
   }
   if (param_1 == '\a') {
-    return param_2 << (param_3 & 0x3f);
+    (&DAT_100008000)[(ulong)param_2 & 0xff] = uVar2 << (uVar1 & 0x3f);
+    return;
   }
   if (param_1 != '\b') {
-    return 0;
+    return;
   }
-  return param_2 >> (param_3 & 0x3f);
+  (&DAT_100008000)[(ulong)param_2 & 0xff] = uVar2 >> (uVar1 & 0x3f);
+  return;
 }
 ```
 
