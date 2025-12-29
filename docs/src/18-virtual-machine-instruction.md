@@ -1,6 +1,6 @@
 # Virtual machine (instruction-level)
 
-An LLVM pass that replaces arithmetic instructions with calls to a register-based VM. Instead of executing `add`, `sub`, `mul`, etc. directly, operands are stored into a global register file, then `__vm_dispatch(opcode, dst, src0, src1)` executes the operation and writes the result back to a destination register. This means that before calling `__vm_dispatch`, the inputs must be copied into the `src0` and `src1` registers, and the result must be read from the `dst` register.
+An LLVM pass that replaces arithmetic instructions with calls to a register-based VM. Instead of executing `add`, `sub`, `mul`, etc. directly, operands are stored into a global register file. Then `__vm_dispatch(opcode, dst, src0, src1)` executes the operation via the proper VM handler and writes the result back to a destination register. This means that before calling `__vm_dispatch`, the inputs must be copied into the `src0` and `src1` registers, and the result must be read from the `dst` register.
 
 This is a simplified, instruction-level approach. Commercial tools usually virtualize entire functions or regions and hide control flow inside the VM. Here, we only virtualize individual operations while keeping branches and loops native.
 
