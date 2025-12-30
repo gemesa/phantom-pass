@@ -36,6 +36,7 @@ private:
   SmallSet<StringRef, 8> FunctionNames;
   Function *VMDispatcher = nullptr;
   GlobalVariable *RegisterFile = nullptr;
+  unsigned BytecodeCounter = 0;
 
   static constexpr uint8_t REG_SRC0 = 0;
   static constexpr uint8_t REG_SRC1 = 1;
@@ -49,6 +50,7 @@ public:
 
   PreservedAnalyses run(Module &M, ModuleAnalysisManager &) {
     bool Changed = false;
+    BytecodeCounter = 0;
     RegisterFile = getOrCreateRegisterFile(M);
     VMDispatcher = getOrCreateVMDispatcher(M);
 
@@ -77,6 +79,27 @@ public:
   }
 
 private:
+  GlobalVariable *createBytecode(Module &M, uint8_t Opcode, uint8_t Dst,
+                                 uint8_t Src0, uint8_t Src1) {
+    LLVMContext &Ctx = M.getContext();
+    IntegerType *I8Ty = Type::getInt8Ty(Ctx);
+    ArrayType *BytecodeTy = ArrayType::get(I8Ty, 4);
+
+    std::vector<Constant *> Bytes = {
+        ConstantInt::get(I8Ty, Opcode),
+        ConstantInt::get(I8Ty, Dst),
+        ConstantInt::get(I8Ty, Src0),
+        ConstantInt::get(I8Ty, Src1),
+    };
+
+    Constant *Init = ConstantArray::get(BytecodeTy, Bytes);
+
+    std::string Name = "__vm_bc_" + std::to_string(BytecodeCounter++);
+
+    return new GlobalVariable(M, BytecodeTy, true, GlobalValue::PrivateLinkage,
+                              Init, Name);
+  }
+
   GlobalVariable *getOrCreateRegisterFile(Module &M) {
     if (GlobalVariable *GV = M.getGlobalVariable("__vm_regs")) {
       return GV;
@@ -94,34 +117,28 @@ private:
   Function *getOrCreateVMDispatcher(Module &M) {
     LLVMContext &Ctx = M.getContext();
 
-    if (Function *F = M.getFunction("__vm_dispatch")) {
+    if (Function *F = M.getFunction("__vm_exec")) {
       return F;
     }
 
     IntegerType *I8Ty = Type::getInt8Ty(Ctx);
     IntegerType *I64Ty = Type::getInt64Ty(Ctx);
     Type *VoidTy = Type::getVoidTy(Ctx);
+    PointerType *I8PtrTy = PointerType::getUnqual(I8Ty);
 
-    // void __vm_dispatch(uint8_t op, uint8_t dst, uint8_t src0, uint8_t src1);
-    FunctionType *FTy =
-        FunctionType::get(VoidTy, {I8Ty, I8Ty, I8Ty, I8Ty}, false);
+    // void __vm_exec(int8_t* bytecode);
+    FunctionType *FTy = FunctionType::get(VoidTy, {I8PtrTy}, false);
 
     Function *F =
-        Function::Create(FTy, Function::PrivateLinkage, "__vm_dispatch", M);
+        Function::Create(FTy, Function::PrivateLinkage, "__vm_exec", M);
 
     // The dispatcher should not be inlined or optimized away.
     // That would defeat the point of the virtualization.
     F->addFnAttr(Attribute::NoInline);
     F->addFnAttr(Attribute::OptimizeNone);
 
-    Argument *OpArg = F->getArg(0);
-    Argument *DstArg = F->getArg(1);
-    Argument *Src0Arg = F->getArg(2);
-    Argument *Src1Arg = F->getArg(3);
-    OpArg->setName("op");
-    DstArg->setName("dst");
-    Src0Arg->setName("src0");
-    Src1Arg->setName("src1");
+    Argument *BytecodeArg = F->getArg(0);
+    BytecodeArg->setName("bytecode");
 
     BasicBlock *EntryBB = BasicBlock::Create(Ctx, "entry", F);
     BasicBlock *AddBB = BasicBlock::Create(Ctx, "add", F);
@@ -137,20 +154,35 @@ private:
     IRBuilder<> Builder(Ctx);
     Builder.SetInsertPoint(EntryBB);
 
-    Value *Src0Ext = Builder.CreateZExt(Src0Arg, I64Ty, "src0_ext");
-    Value *Src1Ext = Builder.CreateZExt(Src1Arg, I64Ty, "src1_ext");
+    // bytecode: [op, dst, src0,  src1]
+    Value *OpPtr = Builder.CreateInBoundsGEP(I8Ty, BytecodeArg,
+                                             Builder.getInt64(0), "op_ptr");
+    Value *DstPtr = Builder.CreateInBoundsGEP(I8Ty, BytecodeArg,
+                                              Builder.getInt64(1), "dst_ptr");
+    Value *Src0Ptr = Builder.CreateInBoundsGEP(I8Ty, BytecodeArg,
+                                               Builder.getInt64(2), "src0_ptr");
+    Value *Src1Ptr = Builder.CreateInBoundsGEP(I8Ty, BytecodeArg,
+                                               Builder.getInt64(3), "src1_ptr");
 
-    Value *Src0Ptr =
-        Builder.CreateInBoundsGEP(RegisterFile->getValueType(), RegisterFile,
-                                  {Builder.getInt64(0), Src0Ext}, "src0_ptr");
-    Value *Src1Ptr =
-        Builder.CreateInBoundsGEP(RegisterFile->getValueType(), RegisterFile,
-                                  {Builder.getInt64(0), Src1Ext}, "src0_ptr");
+    Value *Op = Builder.CreateLoad(I8Ty, OpPtr, "op");
+    Value *Dst = Builder.CreateLoad(I8Ty, DstPtr, "dst");
+    Value *Src0 = Builder.CreateLoad(I8Ty, Src0Ptr, "src0");
+    Value *Src1 = Builder.CreateLoad(I8Ty, Src1Ptr, "src1");
 
-    Value *A = Builder.CreateLoad(I64Ty, Src0Ptr, "a");
-    Value *B = Builder.CreateLoad(I64Ty, Src1Ptr, "b");
+    Value *Src0Ext = Builder.CreateZExt(Src0, I64Ty, "src0_ext");
+    Value *Src1Ext = Builder.CreateZExt(Src1, I64Ty, "src1_ext");
 
-    SwitchInst *Switch = Builder.CreateSwitch(OpArg, DefaultBB, 8);
+    Value *Src0RegPtr = Builder.CreateInBoundsGEP(
+        RegisterFile->getValueType(), RegisterFile,
+        {Builder.getInt64(0), Src0Ext}, "src0_reg_ptr");
+    Value *Src1RegPtr = Builder.CreateInBoundsGEP(
+        RegisterFile->getValueType(), RegisterFile,
+        {Builder.getInt64(0), Src1Ext}, "src1_reg_ptr");
+
+    Value *A = Builder.CreateLoad(I64Ty, Src0RegPtr, "a");
+    Value *B = Builder.CreateLoad(I64Ty, Src1RegPtr, "b");
+
+    SwitchInst *Switch = Builder.CreateSwitch(Op, DefaultBB, 8);
     Switch->addCase(ConstantInt::get(I8Ty, VM_ADD), AddBB);
     Switch->addCase(ConstantInt::get(I8Ty, VM_SUB), SubBB);
     Switch->addCase(ConstantInt::get(I8Ty, VM_MUL), MulBB);
@@ -164,7 +196,7 @@ private:
                             const char *Name) {
       Builder.SetInsertPoint(BB);
       Value *Result = Builder.CreateBinOp(BinOp, A, B, Name);
-      Value *DstExt = Builder.CreateZExt(DstArg, I64Ty, "dst_ext");
+      Value *DstExt = Builder.CreateZExt(Dst, I64Ty, "dst_ext");
       Value *DstPtr =
           Builder.CreateInBoundsGEP(RegisterFile->getValueType(), RegisterFile,
                                     {Builder.getInt64(0), DstExt}, "dst_ptr");
@@ -214,7 +246,6 @@ private:
 
   bool virtualizeInstructions(Function &F, Module &M) {
     LLVMContext &Ctx = M.getContext();
-    Type *I8Ty = Type::getInt8Ty(Ctx);
     Type *I64Ty = Type::getInt64Ty(Ctx);
 
     SmallVector<Instruction *, 32> ToVirtualize;
@@ -265,10 +296,14 @@ private:
       Builder.CreateStore(AExt, Src0Ptr);
       Builder.CreateStore(BExt, Src1Ptr);
 
-      Builder.CreateCall(VMDispatcher, {ConstantInt::get(I8Ty, Opcode),
-                                        ConstantInt::get(I8Ty, REG_DST),
-                                        ConstantInt::get(I8Ty, REG_SRC0),
-                                        ConstantInt::get(I8Ty, REG_SRC1)});
+      GlobalVariable *Bytecode =
+          createBytecode(M, Opcode, REG_DST, REG_SRC0, REG_SRC1);
+
+      Value *BytecodePtr = Builder.CreateInBoundsGEP(
+          Bytecode->getValueType(), Bytecode,
+          {Builder.getInt64(0), Builder.getInt64(0)}, "bytecode_ptr");
+
+      Builder.CreateCall(VMDispatcher, {BytecodePtr});
 
       Value *DstPtr = Builder.CreateInBoundsGEP(
           RegisterFile->getValueType(), RegisterFile,

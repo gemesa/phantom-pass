@@ -1,12 +1,14 @@
 # Virtual machine (instruction-level)
 
-An LLVM pass that replaces arithmetic instructions with calls to a register-based VM. Instead of executing `add`, `sub`, `mul`, etc. directly, operands are stored into a global register file. Then `__vm_dispatch(opcode, dst, src0, src1)` executes the operation via the proper VM handler and writes the result back to a destination register. This means that before calling `__vm_dispatch`, the inputs must be copied into the `src0` and `src1` registers, and the result must be read from the `dst` register.
+An LLVM pass that replaces arithmetic instructions with calls to a register-based VM. Instead of executing `add`, `sub`, `mul`, etc. directly, operands are stored into a global register file and a bytecode blob is created for each instruction. Then `__vm_exec(bytecode_ptr)` reads the bytecode `[opcode, dst, src0, src1]`, executes the operation via the proper VM handler and writes the result back to a destination register. This means that before calling `__vm_exec`, the inputs must be copied into the `src0` and `src1` registers and the result must be read from the `dst` register.
 
-This is a simplified, instruction-level approach. Commercial tools usually virtualize entire functions or regions and hide control flow inside the VM. Here, we only virtualize individual operations while keeping branches and loops native.
+This is a simplified, instruction-level approach. Commercial tools usually virtualize entire functions or regions, use a single bytecode stream with a fetch-decode-execute (FDE) loop and hide control flow inside the VM. Here, we create separate bytecode blobs per instruction and keep branches and loops native.
 
 Known limitations:
 - significantly increased code size
 - significantly increased runtime penalty
+- control flow remains visible (not virtualized)
+- no bytecode encryption
 - the VM can be easily reversed
 
 The source code is available [here](https://github.com/gemesa/phantom-pass/tree/main/src/18-virtual-machine-instruction).
@@ -73,7 +75,7 @@ $ opt -load-pass-plugin=./obf.dylib -passes="virtual-machine<compute>" -S test.l
 VirtualMachinePass: instructions replaced in function 'compute'
 ```
 
-Check the output, note that the arithmetic instructions have been replaced with `__vm_dispatch` calls:
+Check the output, note that the arithmetic instructions have been replaced with `__vm_exec` calls:
 
 ```
 $ cat obf.ll
@@ -84,6 +86,10 @@ target triple = "arm64-apple-macosx15.0.0"
 
 @.str = private unnamed_addr constant [12 x i8] c"Result: %d\0A\00", align 1
 @__vm_regs = private global [256 x i64] zeroinitializer
+@__vm_bc_0 = private constant [4 x i8] c"\01\02\00\01"
+@__vm_bc_1 = private constant [4 x i8] c"\07\02\00\01"
+@__vm_bc_2 = private constant [4 x i8] c"\06\02\00\01"
+@__vm_bc_3 = private constant [4 x i8] c"\02\02\00\01"
 
 ; Function Attrs: mustprogress nofree noinline norecurse nosync nounwind ssp willreturn memory(none) uwtable(sync)
 define i32 @compute(i32 noundef %a, i32 noundef %b) local_unnamed_addr #0 {
@@ -92,26 +98,26 @@ entry:
   %b_ext = sext i32 %a to i64
   store i64 %a_ext, ptr @__vm_regs, align 8
   store i64 %b_ext, ptr getelementptr inbounds ([256 x i64], ptr @__vm_regs, i64 0, i64 1), align 8
-  call void @__vm_dispatch(i8 1, i8 2, i8 0, i8 1)
+  call void @__vm_exec(ptr @__vm_bc_0)
   %vm_result = load i64, ptr getelementptr inbounds ([256 x i64], ptr @__vm_regs, i64 0, i64 2), align 8
   %vm_trunc = trunc i64 %vm_result to i32
   %a_ext1 = sext i32 %vm_trunc to i64
   store i64 %a_ext1, ptr @__vm_regs, align 8
   store i64 1, ptr getelementptr inbounds ([256 x i64], ptr @__vm_regs, i64 0, i64 1), align 8
-  call void @__vm_dispatch(i8 7, i8 2, i8 0, i8 1)
+  call void @__vm_exec(ptr @__vm_bc_1)
   %vm_result2 = load i64, ptr getelementptr inbounds ([256 x i64], ptr @__vm_regs, i64 0, i64 2), align 8
   %vm_trunc3 = trunc i64 %vm_result2 to i32
   %a_ext4 = sext i32 %vm_trunc3 to i64
   store i64 %a_ext4, ptr @__vm_regs, align 8
   store i64 255, ptr getelementptr inbounds ([256 x i64], ptr @__vm_regs, i64 0, i64 1), align 8
-  call void @__vm_dispatch(i8 6, i8 2, i8 0, i8 1)
+  call void @__vm_exec(ptr @__vm_bc_2)
   %vm_result5 = load i64, ptr getelementptr inbounds ([256 x i64], ptr @__vm_regs, i64 0, i64 2), align 8
   %vm_trunc6 = trunc i64 %vm_result5 to i32
   %a_ext7 = sext i32 %vm_trunc6 to i64
   %b_ext8 = sext i32 %a to i64
   store i64 %a_ext7, ptr @__vm_regs, align 8
   store i64 %b_ext8, ptr getelementptr inbounds ([256 x i64], ptr @__vm_regs, i64 0, i64 1), align 8
-  call void @__vm_dispatch(i8 2, i8 2, i8 0, i8 1)
+  call void @__vm_exec(ptr @__vm_bc_3)
   %vm_result9 = load i64, ptr getelementptr inbounds ([256 x i64], ptr @__vm_regs, i64 0, i64 2), align 8
   %vm_trunc10 = trunc i64 %vm_result9 to i32
   ret i32 %vm_trunc10
@@ -129,14 +135,22 @@ entry:
 declare noundef i32 @printf(ptr noundef readonly captures(none), ...) local_unnamed_addr #2
 
 ; Function Attrs: noinline optnone
-define private void @__vm_dispatch(i8 %op, i8 %dst, i8 %src0, i8 %src1) #3 {
+define private void @__vm_exec(ptr %bytecode) #3 {
 entry:
+  %op_ptr = getelementptr inbounds i8, ptr %bytecode, i64 0
+  %dst_ptr = getelementptr inbounds i8, ptr %bytecode, i64 1
+  %src0_ptr = getelementptr inbounds i8, ptr %bytecode, i64 2
+  %src1_ptr = getelementptr inbounds i8, ptr %bytecode, i64 3
+  %op = load i8, ptr %op_ptr, align 1
+  %dst = load i8, ptr %dst_ptr, align 1
+  %src0 = load i8, ptr %src0_ptr, align 1
+  %src1 = load i8, ptr %src1_ptr, align 1
   %src0_ext = zext i8 %src0 to i64
   %src1_ext = zext i8 %src1 to i64
-  %src0_ptr = getelementptr inbounds [256 x i64], ptr @__vm_regs, i64 0, i64 %src0_ext
-  %src0_ptr1 = getelementptr inbounds [256 x i64], ptr @__vm_regs, i64 0, i64 %src1_ext
-  %a = load i64, ptr %src0_ptr, align 8
-  %b = load i64, ptr %src0_ptr1, align 8
+  %src0_reg_ptr = getelementptr inbounds [256 x i64], ptr @__vm_regs, i64 0, i64 %src0_ext
+  %src1_reg_ptr = getelementptr inbounds [256 x i64], ptr @__vm_regs, i64 0, i64 %src1_ext
+  %a = load i64, ptr %src0_reg_ptr, align 8
+  %b = load i64, ptr %src1_reg_ptr, align 8
   switch i8 %op, label %default [
     i8 1, label %add
     i8 2, label %sub
@@ -151,8 +165,8 @@ entry:
 add:                                              ; preds = %entry
   %add_res = add i64 %a, %b
   %dst_ext = zext i8 %dst to i64
-  %dst_ptr = getelementptr inbounds [256 x i64], ptr @__vm_regs, i64 0, i64 %dst_ext
-  store i64 %add_res, ptr %dst_ptr, align 8
+  %dst_ptr1 = getelementptr inbounds [256 x i64], ptr @__vm_regs, i64 0, i64 %dst_ext
+  store i64 %add_res, ptr %dst_ptr1, align 8
   ret void
 
 sub:                                              ; preds = %entry
@@ -244,59 +258,63 @@ undefined8 _compute(int param_1,int param_2)
 {
   DAT_100008000 = (long)param_2;
   DAT_100008008 = (long)param_1;
-  FUN_100000644(1);
+  FUN_100000668(&DAT_100000860);
   DAT_100008000 = (long)(int)DAT_100008010;
   DAT_100008008 = 1;
-  FUN_100000644(7,2,0,1);
+  FUN_100000668(&DAT_100000864);
   DAT_100008000 = (long)(int)DAT_100008010;
   DAT_100008008 = 0xff;
-  FUN_100000644(6,2,0,1);
+  FUN_100000668(&DAT_100000868);
   DAT_100008000 = (long)(int)DAT_100008010;
   DAT_100008008 = (long)param_1;
-  FUN_100000644(2,2,0,1);
+  FUN_100000668(&DAT_10000086c);
   return DAT_100008010;
 }
 
-void FUN_100000644(char param_1,uint param_2,ulong param_3,ulong param_4)
+void FUN_100000668(char *param_1)
 
 {
-  ulong uVar1;
-  ulong uVar2;
+  char cVar1;
+  byte bVar2;
+  ulong uVar3;
+  ulong uVar4;
   
-  uVar2 = (&DAT_100008000)[param_3 & 0xff];
-  uVar1 = (&DAT_100008000)[param_4 & 0xff];
-  if (param_1 == '\x01') {
-    (&DAT_100008000)[(ulong)param_2 & 0xff] = uVar2 + uVar1;
+  cVar1 = *param_1;
+  bVar2 = param_1[1];
+  uVar4 = (&DAT_100008000)[(byte)param_1[2]];
+  uVar3 = (&DAT_100008000)[(byte)param_1[3]];
+  if (cVar1 == '\x01') {
+    (&DAT_100008000)[bVar2] = uVar4 + uVar3;
     return;
   }
-  if (param_1 == '\x02') {
-    (&DAT_100008000)[(ulong)param_2 & 0xff] = uVar2 - uVar1;
+  if (cVar1 == '\x02') {
+    (&DAT_100008000)[bVar2] = uVar4 - uVar3;
     return;
   }
-  if (param_1 == '\x03') {
-    (&DAT_100008000)[(ulong)param_2 & 0xff] = uVar2 * uVar1;
+  if (cVar1 == '\x03') {
+    (&DAT_100008000)[bVar2] = uVar4 * uVar3;
     return;
   }
-  if (param_1 == '\x04') {
-    (&DAT_100008000)[(ulong)param_2 & 0xff] = uVar2 & uVar1;
+  if (cVar1 == '\x04') {
+    (&DAT_100008000)[bVar2] = uVar4 & uVar3;
     return;
   }
-  if (param_1 == '\x05') {
-    (&DAT_100008000)[(ulong)param_2 & 0xff] = uVar2 | uVar1;
+  if (cVar1 == '\x05') {
+    (&DAT_100008000)[bVar2] = uVar4 | uVar3;
     return;
   }
-  if (param_1 == '\x06') {
-    (&DAT_100008000)[(ulong)param_2 & 0xff] = uVar2 ^ uVar1;
+  if (cVar1 == '\x06') {
+    (&DAT_100008000)[bVar2] = uVar4 ^ uVar3;
     return;
   }
-  if (param_1 == '\a') {
-    (&DAT_100008000)[(ulong)param_2 & 0xff] = uVar2 << (uVar1 & 0x3f);
+  if (cVar1 == '\a') {
+    (&DAT_100008000)[bVar2] = uVar4 << (uVar3 & 0x3f);
     return;
   }
-  if (param_1 != '\b') {
+  if (cVar1 != '\b') {
     return;
   }
-  (&DAT_100008000)[(ulong)param_2 & 0xff] = uVar2 >> (uVar1 & 0x3f);
+  (&DAT_100008000)[bVar2] = uVar4 >> (uVar3 & 0x3f);
   return;
 }
 ```
