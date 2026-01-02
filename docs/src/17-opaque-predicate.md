@@ -1,6 +1,6 @@
 # Opaque predicate
 
-An LLVM pass that obfuscates conditional branches by combining them with opaque predicates (expressions that always evaluate to true but are hard to prove statically). The original branch condition is `AND`ed with the opaque predicate, so the program behavior stays the same but the control flow becomes harder to analyze.
+An LLVM pass that obfuscates conditional branches by combining them with opaque predicates (expressions that always evaluate to known value but are hard to prove statically). The original branch condition is `AND`ed with the opaque predicate, so the program behavior stays the same but the control flow becomes harder to analyze.
 
 The opaque predicates are based on table 1 (page 5) of [When Are Opaque Predicates Useful?](https://eprint.iacr.org/2017/787.pdf).
 
