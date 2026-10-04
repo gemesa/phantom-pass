@@ -13,15 +13,15 @@ Disassembler::Disassembler(const Triple &TT) {
   InitializeAllDisassemblers();
 
   std::string Error;
-  TheTarget = TargetRegistry::lookupTarget(TT.str(), Error);
+  TheTarget = TargetRegistry::lookupTarget(TT, Error);
   if (!TheTarget) {
     errs() << "Error: " << Error << "\n";
     return;
   }
 
-  MRI.reset(TheTarget->createMCRegInfo(TT.str()));
-  MAI.reset(TheTarget->createMCAsmInfo(*MRI, TT.str(), MCTargetOptions()));
-  STI.reset(TheTarget->createMCSubtargetInfo(TT.str(), "", ""));
+  MRI.reset(TheTarget->createMCRegInfo(TT));
+  MAI.reset(TheTarget->createMCAsmInfo(*MRI, TT, MCTargetOptions()));
+  STI.reset(TheTarget->createMCSubtargetInfo(TT, "", ""));
   MII.reset(TheTarget->createMCInstrInfo());
 
   Ctx = std::make_unique<MCContext>(TT, MAI.get(), MRI.get(), STI.get());
