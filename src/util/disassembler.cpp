@@ -24,7 +24,7 @@ Disassembler::Disassembler(const Triple &TT) {
   STI.reset(TheTarget->createMCSubtargetInfo(TT, "", ""));
   MII.reset(TheTarget->createMCInstrInfo());
 
-  Ctx = std::make_unique<MCContext>(TT, MAI.get(), MRI.get(), STI.get());
+  Ctx = std::make_unique<MCContext>(TT, *MAI, *MRI, *STI);
   DisAsm.reset(TheTarget->createMCDisassembler(*STI, *Ctx));
 
   IP.reset(TheTarget->createMCInstPrinter(TT, MAI->getAssemblerDialect(), *MAI,
